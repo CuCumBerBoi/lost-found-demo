@@ -8,13 +8,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, X , Sparkles, Loader2} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { analyzeImage } from "@/app/actions/gemini";
 
 export default function FoundPage() {
   const router = useRouter();
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [analyzing, setAnalyzing] = useState(false);
   
   // Form States
   const [title, setTitle] = useState("");
@@ -25,6 +29,11 @@ export default function FoundPage() {
   const [files, setFiles] = useState<File[]>([]); 
   const [previews, setPreviews] = useState<string[]>([]);
 
+  //ทันทีที่เปิดหน้าเว็บ
+  /*พอเปิดหน้าเว็บปุ๊บ (useEffect) 
+  -> ให้วิ่งไปที่ตาราง Categories (supabase) 
+  -> หยิบข้อมูลมาทั้งหมด 
+  -> แล้วเอามาเก็บไว้ในตัวแปร (setCategories) เพื่อเตรียมโชว์ในช่องเลือกหมวดหมู่*/
   useEffect(() => {
     const fetchCategories = async () => {
       const { data } = await supabase.from("categories").select("*");
@@ -32,6 +41,21 @@ export default function FoundPage() {
     };
     fetchCategories();
   }, []);
+  /* 
+  แบบเดิม
+  function() {
+   // ทำงานอะไรบางอย่าง
+  }
+  แบบใหม่
+  () => {
+   // ทำงานอะไรบางอย่าง
+  }
+
+  UseEffect( ของชิ้นที่ 1 , ของชิ้นที่ 2 )
+                (1. คำสั่งหลัก)    (2. เงื่อนไขเวลา)
+  useEffect(   () => { ... }   ,      []       );
+  */ 
+
 
   // ฟังก์ชันจัดการรูปภาพ (เพิ่มได้หลายรูป)
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,6 +81,53 @@ export default function FoundPage() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
     setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
+
+  //  ฟังก์ชันเรียกใช้ Gemini AI
+  const handleAutoFill = async () => {
+    if (files.length === 0) return;
+    
+    setAnalyzing(true);
+    toast.info("Gemini กำลังวิเคราะห์รูปภาพ...", { description: "ระบบกำลังระบุชื่อและหมวดหมู่ของ..." });
+
+    try {
+      // แปลงรูปแรกเป็น Base64
+      const file = files[0];
+      const reader = new FileReader();
+      
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+        
+        // ส่งให้ Server Action ประมวลผล
+        const result = await analyzeImage(base64String);
+
+        if (result) {
+          // กรอกข้อมูลลงฟอร์ม
+          if (result.title) setTitle(result.title);
+          
+          // พยายามจับคู่หมวดหมู่ (Category Mapping)
+          if (result.category_guess) {
+             const matchedCat = categories.find(c => 
+               c.name.toLowerCase().includes(result.category_guess.toLowerCase())
+             );
+             if (matchedCat) setCategoryId(matchedCat.category_id);
+          }
+
+          toast.success("วิเคราะห์เสร็จสิ้น!", { description: "กรุณาตรวจสอบความถูกต้องอีกครั้ง" });
+        } else {
+          toast.error("วิเคราะห์ไม่สำเร็จ", { description: "ลองใหม่อีกครั้ง หรือกรอกข้อมูลด้วยตัวเอง" });
+        }
+        setAnalyzing(false);
+      };
+
+      reader.readAsDataURL(file);
+
+    } catch (error) {
+      console.error(error);
+      toast.error("เกิดข้อผิดพลาด", { description: "ไม่สามารถเชื่อมต่อกับ AI ได้" });
+      setAnalyzing(false);
+    }
+  };
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,7 +173,11 @@ export default function FoundPage() {
         images: uploadedUrls,       // เก็บรูปทั้งหมดเป็น JSON Array
         date_found: new Date().toISOString(),
         user_id: user.id,
-        status: "AVAILABLE",
+        // status: "AVAILABLE",
+
+        // มาแก้ด้วย
+        building: "Unknown", // ใส่ค่าหลอกไปก่อน
+        floor: "1",          // ใส่ค่าหลอกไปก่อน
       });
 
       if (insertError) throw insertError;
@@ -111,6 +186,7 @@ export default function FoundPage() {
       router.push("/"); 
       
     } catch (error: any) {
+      console.log("🔥 Error Details:", JSON.stringify(error, null, 2));
       console.error(error);
       toast.error("Error", { description: error.message });
     } finally {
@@ -170,6 +246,29 @@ export default function FoundPage() {
                   </label>
                 )}
               </div>
+              {/* ✨ ปุ่ม AI Magic Button (แสดงเมื่อมีรูป) */}
+              {files.length > 0 && (
+                <Button 
+                  type="button" 
+                  onClick={handleAutoFill} 
+                  disabled={analyzing}
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:opacity-90 transition-all shadow-md"
+                >
+                  {analyzing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                      Gemini is thinking...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-6 w-6 text-yellow-200" /> 
+                      {/* analyze the characteristics of the item <br/> */}
+                      (ระบบช่วยวิเคราะห์ลักษณะสิ่งของ)
+                    </>
+                  )}
+                </Button>
+              )}  
+
               <p className="text-xs text-gray-500">
                 *รูปภาพสำคัญมาก เพื่อให้เจ้าของยืนยันได้ว่าเป็นของเขาจริงๆ
               </p>

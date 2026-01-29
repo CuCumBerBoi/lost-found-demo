@@ -2,6 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase-server"; 
 import { UserNav } from "./UserNav";
 import { MobileNav } from "./MobileNav";
+// import { Sparkle } from "lucide-react";
+import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 
 export async function Navbar() {
     // 1. สร้าง client สำหรับ server
@@ -42,10 +44,13 @@ export async function Navbar() {
             หน้าแรก
           </Link>
           <Link href="/found" className="hover:text-green-600 transition-colors">
-            .........
+            แจ้งพบสิ่งของ
           </Link>
           <Link href="/report-lost" className="hover:text-red-600 transition-colors">
-            .........
+            แจ้งสิ่งของหาย
+          </Link>
+          <Link href="/matches" className="hover:text-red-600 transition-colors">
+            ระบบช่วยจับคู่
           </Link>
         </div>
 

@@ -73,26 +73,27 @@ export default async function Home({
       <section className="bg-gradient-to-br from-green-600 to-emerald-800 text-white py-16 px-4">
         <div className="container mx-auto max-w-4xl text-center space-y-6">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-            ทำของหาย... หรือเก็บได้?
+            ศูนย์กลางแจ้งของหายและของที่พบ
           </h1>
           <p className="text-lg md:text-xl text-green-100 max-w-2xl mx-auto">
-            ศูนย์กลางการติดตามสิ่งของภายในมหาวิทยาลัย ช่วยกันเป็นหูเป็นตา เพื่อสังคมที่น่าอยู่
+            แพลตฟอร์มที่รวบรวมข้อมูลการแจ้งของหายและของที่พบ เพื่ออำนวยความสะดวก
+และให้ทุกการตามหามีโอกาสสำเร็จมากขึ้น
           </p>
           
-          <div className="flex flex-wrap justify-center gap-4 mt-8">
+          {/* <div className="flex flex-wrap justify-center gap-4 mt-8">
             <Link href="/found">
               <Button size="lg" className="bg-white text-green-700 hover:bg-green-50 shadow-lg border-0 h-14 px-8 text-lg">
                 <Search className="mr-2 h-5 w-5" />
-                ฉันเจอของ (I Found)
+                แจ้งพบสิ่งของ
               </Button>
             </Link>
             <Link href="/report-lost">
               <Button size="lg" variant="outline" className="text-white border-white hover:bg-white/10 hover:text-white h-14 px-8 text-lg bg-transparent">
                 <PlusCircle className="mr-2 h-5 w-5" />
-                ฉันทำของหาย (I Lost)
+                แจ้งสิ่งของสูญหาย
               </Button>
             </Link>
-          </div>
+          </div> */}
         </div>
       </section>
 
@@ -102,7 +103,7 @@ export default async function Home({
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 whitespace-nowrap">
               <Filter className="h-5 w-5 text-green-600" />
-              ค้นหาของที่เจอ
+              ค้นหาสิ่งของ........
             </h2>
             <div className="w-full md:max-w-md">
               <SearchBar />

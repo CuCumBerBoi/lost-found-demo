@@ -14,6 +14,8 @@ import { supabase } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { LogOut, User, PlusCircle, Search } from "lucide-react";
+import { Sparkle } from "lucide-react";
+import { Inbox } from "lucide-react";
 
 // รับ Props ข้อมูล User เข้ามา (ถ้าเป็น null แปลว่ายังไม่ Login)
 export function UserNav({ user }: { user: any }) {
@@ -88,6 +90,21 @@ export function UserNav({ user }: { user: any }) {
                     <DropdownMenuItem className="cursor-pointer text-green-600 focus:text-green-700">
                         <Search className="mr-2 h-4 w-4" />
                         <span>แจ้งเจอของ (I Found)</span>
+                    </DropdownMenuItem>
+                </Link>
+
+                <Link href="/inbox">
+                    <DropdownMenuItem className="cursor-pointer">
+                        <Inbox className="mr-2 h-4 w-4" />
+                        <span>Inbox / คำขอคืน</span>
+                    </DropdownMenuItem>
+                </Link>
+
+                {/* 👇 เพิ่มเมนู Match ตรงนี้ 👇 */}
+                <Link href="/matches">
+                    <DropdownMenuItem className="cursor-pointer bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 focus:bg-orange-100">
+                        <Sparkle className="mr-2 h-4 w-4 text-orange-500" />
+                        <span>Smart Match (จับคู่)</span>
                     </DropdownMenuItem>
                 </Link>
 

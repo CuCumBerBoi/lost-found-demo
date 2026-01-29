@@ -9,7 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, X, Sparkles, Loader2} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { analyzeImage } from "@/app/actions/gemini";
 
 
 export default function ReportPage() {
@@ -18,6 +21,7 @@ export default function ReportPage() {
 
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const [analyzing, setAnalyzing] = useState(false);
 
 
   // Form States
@@ -28,6 +32,7 @@ export default function ReportPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const [color, setColor] = useState(""); 
 
   // 1. ดึงข้อมูล Categories ตอนเข้าหน้าเว็บ
   useEffect(() => {
@@ -62,12 +67,63 @@ export default function ReportPage() {
     setPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // ✨ ฟังก์ชันเรียก Gemini AI
+  const handleAutoFill = async () => {
+    if (files.length === 0) return;
+    
+    setAnalyzing(true);
+    toast.info("Gemini กำลังวิเคราะห์รูปภาพ...", { description: "กรุณารอสักครู่" });
+
+    try {
+      // 1. แปลงไฟล์แรกเป็น Base64
+      const file = files[0];
+      const reader = new FileReader();
+      
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+        
+        // 2. ส่งไปให้ Server Action
+        const result = await analyzeImage(base64String);
+
+        if (result) {
+          // 3. กรอกข้อมูลลง Form
+          setTitle(result.title || "");
+          setDescription(result.description || "");
+          if (result.color) setColor(result.color);
+
+          // พยายาม Map Category (ถ้าชื่อตรงกัน)
+          // เช่น AI ตอบ "Electronics" เราก็ไปหาใน categories state
+          if (result.category_guess) {
+             const matchedCat = categories.find(c => 
+               c.name.toLowerCase().includes(result.category_guess.toLowerCase())
+             );
+             if (matchedCat) setCategoryId(matchedCat.category_id);
+          }
+
+          toast.success("วิเคราะห์เสร็จสิ้น!", { description: "ตรวจสอบและแก้ไขข้อมูลได้เลย" });
+        } else {
+          toast.error("วิเคราะห์ไม่สำเร็จ", { description: "ลองใหม่อีกครั้ง หรือกรอกเอง" });
+        }
+        setAnalyzing(false);
+      };
+
+      reader.readAsDataURL(file); // เริ่มอ่านไฟล์
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Error", { description: "Something went wrong with AI" });
+      setAnalyzing(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (files.length === 0 || !categoryId) {
-      toast.error("ข้อมูลไม่ครบ", { description: "กรุณาอัปโหลดรูปอย่างน้อย 1 รูป" });
-      return;
-    }
+
+    
+    // if (files.length === 0 || !categoryId) {
+    //   toast.error("ข้อมูลไม่ครบ", { description: "กรุณาอัปโหลดรูปอย่างน้อย 1 รูป" });
+    //   return;
+    // }
 
     setLoading(true);
 
@@ -108,8 +164,12 @@ export default function ReportPage() {
         images: uploadedUrls,       // เก็บรูปทั้งหมดเป็น Array JSON
         date_lost: new Date().toISOString(),
         user_id: user.id,
-        status: "SEARCHING",
-        visibility: "PUBLIC"
+        // status: "SEARCHING",
+        // visibility: "PUBLIC",
+        
+        //มาแก้ด้วย
+        building: "Unknown", // ใส่ค่าหลอกไปก่อน
+        floor: "1",          // ใส่ค่าหลอกไปก่อน
       });
 
       if (insertError) throw insertError;
@@ -133,9 +193,7 @@ export default function ReportPage() {
              📢 Report Lost Item (แจ้งของหาย)
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            
+        <CardContent>           
             {/* Multi-Image Upload */}
             <div className="space-y-2">
               <Label>Upload Images (รูปภาพสิ่งของ) - สูงสุด 5 รูป</Label>
@@ -175,9 +233,31 @@ export default function ReportPage() {
                   </label>
                 )}
               </div>
+              {/* ✨ ปุ่ม AI Magic Button (แสดงเมื่อมีรูป) */}
+              {files.length > 0 && (
+                <Button 
+                  type="button" 
+                  onClick={handleAutoFill} 
+                  disabled={analyzing}
+                  className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white hover:opacity-90 transition-all shadow-md"
+                >
+                  {analyzing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                      Gemini is thinking...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4 text-yellow-200" /> 
+                      (ระบบช่วยวิเคราะห์ลักษณะสิ่งของ)
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
 
             {/* ... Inputs อื่นๆ เหมือนเดิม ... */}
+          <form onSubmit={handleSubmit} className="space-y-6">
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>What was lost? (ชื่อสิ่งของ)</Label>

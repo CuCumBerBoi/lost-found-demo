@@ -50,11 +50,11 @@ export function ItemCard({ item }: ItemProps) {
               No Image
             </div>
           )}
-          <div className="absolute top-2 right-2">
+          {/* <div className="absolute top-2 right-2">
             <Badge variant={getStatusColor(item.status) as any}>
               {item.status}
             </Badge>
-          </div>
+          </div> */}
         </div>
 
         <CardContent className="p-4 flex-1">
