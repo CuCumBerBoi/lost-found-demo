@@ -14,70 +14,89 @@ export interface CommonItem {
   type: 'LOST' | 'FOUND'; // ตัวบอกประเภท
   categories: {
     name: string;
-  } | null; // อนุญาตให้ null ได้กัน error
+  } | null;
 }
 
-// Type Definition ให้ตรงกับ Database
 interface ItemProps {
-    item: CommonItem;
+  item: CommonItem;
 }
 
 export function ItemCard({ item }: ItemProps) {
-    // เลือกสี Badge ตามสถานะ
+  // เลือกสี Badge ตามสถานะ
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'AVAILABLE': return "default"; // เขียว (ปกติของ shadcn default คือดำ แต่อ่านง่ายกว่า)
-      case 'SEARCHING': return "destructive"; // แดง
-      case 'RETURNED': return "secondary"; // เทา
+      case 'AVAILABLE': return "default";
+      case 'SEARCHING': return "destructive";
+      case 'RETURNED': return "secondary";
       default: return "outline";
     }
   };
 
   // ลิงก์ไปหน้า Detail แยกตามประเภท
   const linkHref = item.type === 'FOUND' ? `/found/${item.id}` : `/item/${item.id}`;
+
   return (
     <Link href={linkHref}>
-      <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col group">
-        <div className="relative h-48 w-full bg-gray-100 overflow-hidden">
+      <Card className="overflow-hidden bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer h-full flex flex-col group hover:scale-[1.02] hover:border-gray-200">
+        
+        {/* Image Container */}
+        <div className="relative h-48 w-full bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
           {item.image_url ? (
             <img
               src={item.image_url}
               alt={item.title}
-              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+              className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
             />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400">
-              No Image
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-2 bg-white rounded-full flex items-center justify-center shadow-sm">
+                  <MapPin className="w-8 h-8 text-gray-300" />
+                </div>
+                <p className="text-sm font-light">No Image</p>
+              </div>
             </div>
           )}
-          {/* <div className="absolute top-2 right-2">
-            <Badge variant={getStatusColor(item.status) as any}>
-              {item.status}
+          
+          {/* Type Badge - Top Right */}
+          <div className="absolute top-3 right-3">
+            <Badge 
+              className={`${
+                item.type === 'FOUND' 
+                  ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700' 
+                  : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
+              } text-white border-0 shadow-lg text-xs font-bold px-3 py-1 rounded-xl`}
+            >
+              {item.type === 'FOUND' ? '🎁 เจอ' : '🔍 หาย'}
             </Badge>
-          </div> */}
+          </div>
         </div>
 
-        <CardContent className="p-4 flex-1">
-          <div className="flex justify-between items-start mb-2">
-            <Badge variant="outline" className="mb-2">
-              {item.categories?.name || "Other"}
+        {/* Content */}
+        <CardContent className="p-4 flex-1 flex flex-col">
+          {/* Category Badge */}
+          <div className="mb-3">
+            <Badge 
+              variant="outline" 
+              className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200 text-purple-700 text-xs font-medium px-3 py-1 rounded-xl"
+            >
+              {item.categories?.name || "อื่นๆ"}
             </Badge>
-            {/* โชว์ประเภทเล็กๆ ให้รู้ */}
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-              item.type === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-            }`}>
-              {item.type === 'FOUND' ? 'FOUND' : 'LOST'}
-            </span>
           </div>
-          <h3 className="font-bold text-lg line-clamp-1 mb-1">{item.title}</h3>
+
+          {/* Title */}
+          <h3 className="font-bold text-lg text-gray-900 line-clamp-2 mb-3 min-h-[56px] group-hover:text-gray-700 transition-colors">
+            {item.title}
+          </h3>
           
-          <div className="text-sm text-gray-500 space-y-1">
-            <div className="flex items-center gap-1">
-              <MapPin size={16} />
+          {/* Details */}
+          <div className="text-sm text-gray-500 space-y-2 mt-auto font-light">
+            <div className="flex items-center gap-2">
+              <MapPin size={14} className="text-gray-400 flex-shrink-0" />
               <span className="line-clamp-1">{item.location_text}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Calendar size={16} />
+            <div className="flex items-center gap-2">
+              <Calendar size={14} className="text-gray-400 flex-shrink-0" />
               <span>
                 {new Date(item.date).toLocaleDateString("th-TH", {
                   day: "numeric",
@@ -88,6 +107,17 @@ export function ItemCard({ item }: ItemProps) {
             </div>
           </div>
         </CardContent>
+
+        {/* Footer - Hover Action */}
+        <div className="px-4 pb-4">
+          <div className="h-0 group-hover:h-10 overflow-hidden transition-all duration-300">
+            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl px-3 py-2 text-center">
+              <span className="text-xs font-bold text-gray-700">
+                {item.type === 'FOUND' ? 'ดูรายละเอียด →' : 'ดูข้อมูล →'}
+              </span>
+            </div>
+          </div>
+        </div>
       </Card>
     </Link>
   );

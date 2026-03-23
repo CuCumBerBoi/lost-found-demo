@@ -32,10 +32,10 @@ export function UserNav({ user }: { user: any }) {
         return (
             <div className="flex gap-2">
                 <Link href="/login">
-                    <Button variant="ghost">Log in</Button>
+                    <Button variant="ghost">เข้าสู่ระบบ</Button>
                 </Link>
                 <Link href="/register">
-                    <Button>Sign Up</Button>
+                    <Button>สมัครสมาชิก</Button>
                 </Link>
             </div>
         );
@@ -75,11 +75,11 @@ export function UserNav({ user }: { user: any }) {
                 <Link href="/profile">
                     <DropdownMenuItem className="cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
-                        <span>Profile</span>
+                        <span>โปรไฟล์</span>
                     </DropdownMenuItem>
                 </Link>
 
-                <Link href="/report">
+                {/* <Link href="/report-lost">
                     <DropdownMenuItem className="cursor-pointer">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         <span>แจ้งของหาย</span>
@@ -89,29 +89,29 @@ export function UserNav({ user }: { user: any }) {
                 <Link href="/found">
                     <DropdownMenuItem className="cursor-pointer text-green-600 focus:text-green-700">
                         <Search className="mr-2 h-4 w-4" />
-                        <span>แจ้งเจอของ (I Found)</span>
+                        <span>แจ้งเจอของ</span>
                     </DropdownMenuItem>
                 </Link>
 
                 <Link href="/inbox">
                     <DropdownMenuItem className="cursor-pointer">
                         <Inbox className="mr-2 h-4 w-4" />
-                        <span>Inbox / คำขอคืน</span>
+                        <span>กล่องข้อความ / คำขอคืน</span>
                     </DropdownMenuItem>
-                </Link>
+                </Link> */}
 
                 {/* 👇 เพิ่มเมนู Match ตรงนี้ 👇 */}
-                <Link href="/matches">
+                {/* <Link href="/matches">
                     <DropdownMenuItem className="cursor-pointer bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 focus:bg-orange-100">
                         <Sparkle className="mr-2 h-4 w-4 text-orange-500" />
-                        <span>Smart Match (จับคู่)</span>
+                        <span>ระบบจับคู่ (Smart Match)</span>
                     </DropdownMenuItem>
-                </Link>
+                </Link> */}
 
-                <DropdownMenuSeparator />
+                {/* <DropdownMenuSeparator /> */}
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
                     <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
+                    <span>ออกจากระบบ</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
