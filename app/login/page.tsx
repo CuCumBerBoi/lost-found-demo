@@ -61,7 +61,7 @@ export default function LoginPage() {
         <div className='relative z-10 w-full max-w-lg'>
           <div className='inline-flex items-center space-x-2 bg-white/10 border border-white/20 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium text-white mb-8'>
             <Sparkles size={16} className='text-amber-400' />
-            <span>AI-Powered Lost & Found</span>
+            <span>Welcome to FoundIt.</span>
           </div>
           <h1 className='text-5xl font-extrabold text-white tracking-tight leading-tight mb-6'>
             ตามหาของที่หาย <br />
@@ -70,7 +70,7 @@ export default function LoginPage() {
             </span>
           </h1>
           <p className='text-lg text-slate-300 leading-relaxed mb-12 font-medium'>
-            ระบบจัดการสิ่งของสูญหายอัจฉริยะที่ใช้ Gemini AI ช่วยสกัดข้อมูลและจับคู่สิ่งของให้คุณโดยอัตโนมัติ รวดเร็ว และปลอดภัย
+            แพลตฟอร์มที่จะช่วยคุณตามหาสิ่งของที่สูญหาย และตามหาเจ้าของ ด้วยการวิเคราะห์ข้อมูลและจับคู่สิ่งของให้คุณโดยอัตโนมัติ รวดเร็ว และปลอดภัย
           </p>
 
           <div className='space-y-5'>
@@ -79,8 +79,8 @@ export default function LoginPage() {
                 <CheckCircle2 className='text-emerald-400' size={24} />
               </div>
               <div>
-                <h4 className='text-white font-bold mb-0.5'>Smart Auto-tagging</h4>
-                <p className='text-sm'>สกัดสีและยี่ห้อจากรูปภาพอัตโนมัติ</p>
+                <h4 className='text-white font-bold mb-0.5'>Smart Matching</h4>
+                <p className='text-sm'>ระบบช่วยจับคู่สิ่งของที่หายกับสิ่งของที่พบโดยอัตโนมัติ</p>
               </div>
             </div>
             <div className='flex items-center text-slate-300 bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm'>
@@ -89,7 +89,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <h4 className='text-white font-bold mb-0.5'>Secure Claiming</h4>
-                <p className='text-sm'>ระบบยืนยันตัวตนที่ปลอดภัยและรัดกุม</p>
+                <p className='text-sm'>ระบบยืนยันตัวตนด้วยหลักฐานและส่งคืนอย่างปลอดภัย</p>
               </div>
             </div>
           </div>

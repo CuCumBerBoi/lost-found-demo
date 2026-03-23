@@ -87,7 +87,7 @@ export default function RegisterPage() {
           <h1 className='text-5xl font-extrabold text-white tracking-tight leading-tight mb-6'>
             เริ่มต้นใช้งานระบบ <br />
             <span className='text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400'>
-              Lost & Found
+              FoundIt.
             </span>
           </h1>
           <p className='text-lg text-slate-300 leading-relaxed mb-12 font-medium'>
@@ -100,8 +100,8 @@ export default function RegisterPage() {
                 <CheckCircle2 className='text-emerald-400' size={24} />
               </div>
               <div>
-                <h4 className='text-white font-bold mb-0.5'>Smart Auto-tagging</h4>
-                <p className='text-sm'>สกัดสีและยี่ห้อจากรูปภาพอัตโนมัติ</p>
+                <h4 className='text-white font-bold mb-0.5'>Smart Matching</h4>
+                <p className='text-sm'>ระบบช่วยจับคู่สิ่งของที่หายกับสิ่งของที่พบโดยอัตโนมัติ</p>
               </div>
             </div>
             <div className='flex items-center text-slate-300 bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm'>

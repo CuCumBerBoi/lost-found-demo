@@ -105,6 +105,11 @@ export function Navbar() {
     { label: "รายการจับคู่", icon: Sparkles, href: "/matches" },
   ];
 
+  const hideNavbarPages = ["/login", "/register", "/signup"];
+  if (hideNavbarPages.includes(pathname)) {
+    return null; // คืนค่า null = ไม่แสดง Navbar
+  }
+
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-500 ${
