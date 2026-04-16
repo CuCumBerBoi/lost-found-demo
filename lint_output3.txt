@@ -1,0 +1,159 @@
+
+> lost-and-found-demo@0.1.0 lint
+> eslint
+
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\admin\page.tsx
+  41:10  warning  '_user' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  68:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\admin\page.tsx:68:5
+  66 |
+  67 |   useEffect(() => {
+> 68 |     checkAuth();
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  69 |   }, [checkAuth]);
+  70 |
+  71 |   const handleLogout = async () => {  react-hooks/set-state-in-effect
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\api\analyze\route.ts
+  4:33  warning  'buffer' is defined but never used    @typescript-eslint/no-unused-vars
+  4:49  warning  'mimeType' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\found\page.tsx
+  36:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\login\page.tsx
+  302:17  warning  'use' is defined but never used     @typescript-eslint/no-unused-vars
+  309:3   warning  'Github' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\lost\page.tsx
+   21:8   warning  'Link' is defined but never used               @typescript-eslint/no-unused-vars
+   22:26  warning  '_analyzeImage' is defined but never used      @typescript-eslint/no-unused-vars
+  127:10  warning  '_loading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\matches\page.tsx
+    9:3   warning  'AlertCircle' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+   22:3   warning  'Bell' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   23:3   warning  'User' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   24:3   warning  'Menu' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   35:17  error    Unexpected any. Specify a different type                                                                     @typescript-eslint/no-explicit-any
+  100:21  error    Unexpected any. Specify a different type                                                                     @typescript-eslint/no-explicit-any
+  317:6   warning  React Hook useEffect has a missing dependency: 'supabase'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\page.tsx
+    6:10  warning  'Button' is defined but never used        @typescript-eslint/no-unused-vars
+    7:10  warning  'Badge' is defined but never used         @typescript-eslint/no-unused-vars
+    8:8   warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+   13:3   warning  'Package' is defined but never used       @typescript-eslint/no-unused-vars
+   14:3   warning  'AlertCircle' is defined but never used   @typescript-eslint/no-unused-vars
+   56:3   warning  'id' is defined but never used            @typescript-eslint/no-unused-vars
+  362:58  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  363:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  377:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\profile\page.tsx
+  264:106  warning  'AlertCircle' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  299:60   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  310:62   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  346:16   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  470:43   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  470:49   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  478:41   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  478:47   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  495:9    warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\found\page.tsx
+  2:18  warning  'MapPin' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\home\page.tsx
+    1:8   warning  'Image' is defined but never used         @typescript-eslint/no-unused-vars
+    7:10  warning  'Search' is defined but never used        @typescript-eslint/no-unused-vars
+    7:18  warning  'PlusCircle' is defined but never used    @typescript-eslint/no-unused-vars
+    7:30  warning  'Filter' is defined but never used        @typescript-eslint/no-unused-vars
+   56:52  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:51  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\lost\page.tsx
+   2:18  warning  'MapPin' is defined but never used    @typescript-eslint/no-unused-vars
+  11:10  warning  'Textarea' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\match\page.tsx
+   2:72  warning  'Info' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  23:65  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  23:88  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  49:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  84:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\test\1\page.tsx
+   5:8   warning  'Link' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   6:10  warning  'Search' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   6:41  warning  'Filter' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   6:49  warning  'X' is defined but never used                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+   6:52  warning  'ChevronRight' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+  21:17  warning  'categories' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  47:52  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  97:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\test\2\page.tsx
+    5:3   warning  'LineChart' is defined but never used      @typescript-eslint/no-unused-vars
+    5:14  warning  'Line' is defined but never used           @typescript-eslint/no-unused-vars
+    9:34  warning  'ChevronUp' is defined but never used      @typescript-eslint/no-unused-vars
+   14:10  warning  'Progress' is defined but never used       @typescript-eslint/no-unused-vars
+   16:3   warning  'Select' is defined but never used         @typescript-eslint/no-unused-vars
+   17:3   warning  'SelectContent' is defined but never used  @typescript-eslint/no-unused-vars
+   18:3   warning  'SelectItem' is defined but never used     @typescript-eslint/no-unused-vars
+   19:3   warning  'SelectTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+   20:3   warning  'SelectValue' is defined but never used    @typescript-eslint/no-unused-vars
+  131:55  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  138:40  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  145:51  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  156:61  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  181:41  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  187:25  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\CardImage.tsx
+  16:7  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\CreateItemForm.tsx
+  118:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\FilterBox.tsx
+  3:10  warning  'Input' is defined but never used                 @typescript-eslint/no-unused-vars
+  5:10  warning  'useRouter' is defined but never used             @typescript-eslint/no-unused-vars
+  5:21  warning  'useSearchParams' is defined but never used       @typescript-eslint/no-unused-vars
+  6:10  warning  'useDebouncedCallback' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\ItemCard.tsx
+   2:29  warning  'CardFooter' is defined but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  26:9   warning  'getStatusColor' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  45:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\MobileNav.tsx
+  11:16   warning  'Home' is defined but never used          @typescript-eslint/no-unused-vars
+  11:22   warning  'Search' is defined but never used        @typescript-eslint/no-unused-vars
+  11:30   warning  'PlusCircle' is defined but never used    @typescript-eslint/no-unused-vars
+  11:108  warning  'Workflow' is defined but never used      @typescript-eslint/no-unused-vars
+  16:45   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\Navbar.tsx
+  5:48  warning  'Search' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\UserNav.tsx
+  21:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\login-form.tsx
+  91:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\utils\supabase\middleware-helper.ts
+  18:48  warning  'options' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 90 problems (25 errors, 65 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

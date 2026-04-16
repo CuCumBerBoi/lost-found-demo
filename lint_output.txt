@@ -1,0 +1,403 @@
+
+> lost-and-found-demo@0.1.0 lint
+> eslint
+
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\admin\components\ClaimsView.tsx
+   37:6   warning  React Hook useEffect has a missing dependency: 'fetchClaims'. Either include it or remove the dependency array                                                                              react-hooks/exhaustive-deps
+   55:56  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+  126:41  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  127:12  warning  'action' is assigned a value but never used                                                                                                                                                 @typescript-eslint/no-unused-vars
+  127:20  warning  'setAction' is assigned a value but never used                                                                                                                                              @typescript-eslint/no-unused-vars
+  127:33  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\admin\components\ItemsView.tsx
+    5:48  warning  'X' is defined but never used                                                                                  @typescript-eslint/no-unused-vars
+   33:6   warning  React Hook useEffect has a missing dependency: 'fetchItems'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   50:35  error    Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+  112:26  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                react/no-unescaped-entities
+  112:47  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                react/no-unescaped-entities
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\admin\components\ReportsView.tsx
+  41:6   warning  React Hook useEffect has a missing dependency: 'fetchStats'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  73:44  error    Unexpected any. Specify a different type                                                                       @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\admin\components\UsersView.tsx
+  29:6   warning  React Hook useEffect has a missing dependency: 'fetchUsers'. Either include it or remove the dependency array                                                                               react-hooks/exhaustive-deps
+  41:54  error    Unexpected any. Specify a different type                                                                                                                                                    @typescript-eslint/no-explicit-any
+  68:29  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  69:33  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+  70:45  error    React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\admin\page.tsx
+  36:10  warning  'user' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  36:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-explicit-any
+  40:5   error    Error: Cannot access variable before it is declared
+
+`checkAuth` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\admin\page.tsx:40:5
+  38 |
+  39 |   useEffect(() => {
+> 40 |     checkAuth();
+     |     ^^^^^^^^^ `checkAuth` accessed before it is declared
+  41 |   }, []);
+  42 |
+  43 |   const checkAuth = async () => {
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\admin\page.tsx:43:3
+  41 |   }, []);
+  42 |
+> 43 |   const checkAuth = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 44 |     const supabase = createClient();
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 45 |     const {
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 63 |     }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 64 |   };
+     | ^^^^^ `checkAuth` is declared here
+  65 |
+  66 |   const handleLogout = async () => {
+  67 |     const supabase = createClient();  react-hooks/immutability
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\api\analyze\route.ts
+  4:33  warning  'buffer' is defined but never used    @typescript-eslint/no-unused-vars
+  4:49  warning  'mimeType' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\found\[id]\claim\page.tsx
+  230:78  warning  'MessageCircle' is defined but never used                        @typescript-eslint/no-unused-vars
+  284:21  error    Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  336:46  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  336:73  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\found\[id]\page.tsx
+  3:10  warning  'useState' is defined but never used      @typescript-eslint/no-unused-vars
+  3:20  warning  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  4:10  warning  'createClient' is defined but never used  @typescript-eslint/no-unused-vars
+  5:10  warning  'useParams' is defined but never used     @typescript-eslint/no-unused-vars
+  6:21  warning  'MapPin' is defined but never used        @typescript-eslint/no-unused-vars
+  6:29  warning  'Calendar' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\found\page.tsx
+   18:48  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+   35:6   warning  React Hook useEffect has a missing dependency: 'supabase'. Either include it or remove the dependency array                                                                                                                                                                              react-hooks/exhaustive-deps
+  149:21  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  206:23  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\item\[id]\page.tsx
+  144:36  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  153:21  warning  'error' is assigned a value but never used                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+  169:6   warning  React Hook useEffect has a missing dependency: 'supabase'. Either include it or remove the dependency array                                                                                                                                                                              react-hooks/exhaustive-deps
+  227:16  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  255:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\login\page.tsx
+  302:17  warning  'use' is defined but never used     @typescript-eslint/no-unused-vars
+  309:3   warning  'Github' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\lost\page.tsx
+    6:10  warning  'Button' is defined but never used                                                                           @typescript-eslint/no-unused-vars
+    7:10  warning  'Input' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+    8:10  warning  'Label' is defined but never used                                                                            @typescript-eslint/no-unused-vars
+    9:10  warning  'Textarea' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+   12:3   warning  'ImagePlus' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+   15:3   warning  'Loader2' is defined but never used                                                                          @typescript-eslint/no-unused-vars
+   16:3   warning  'ArrowLeft' is defined but never used                                                                        @typescript-eslint/no-unused-vars
+   18:3   warning  'Tag' is defined but never used                                                                              @typescript-eslint/no-unused-vars
+   19:3   warning  'FileText' is defined but never used                                                                         @typescript-eslint/no-unused-vars
+   30:8   warning  'Link' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   31:10  warning  'analyzeImage' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  135:48  error    Unexpected any. Specify a different type                                                                     @typescript-eslint/no-explicit-any
+  136:10  warning  'loading' is assigned a value but never used                                                                 @typescript-eslint/no-unused-vars
+  165:6   warning  React Hook useEffect has a missing dependency: 'supabase'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  256:21  error    Unexpected any. Specify a different type                                                                     @typescript-eslint/no-explicit-any
+  417:29  error    Unexpected any. Specify a different type                                                                     @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\matches\page.tsx
+    9:3   warning  'AlertCircle' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+   22:3   warning  'Bell' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   23:3   warning  'User' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   24:3   warning  'Menu' is defined but never used                                                                             @typescript-eslint/no-unused-vars
+   35:17  error    Unexpected any. Specify a different type                                                                     @typescript-eslint/no-explicit-any
+  100:21  error    Unexpected any. Specify a different type                                                                     @typescript-eslint/no-explicit-any
+  317:6   warning  React Hook useEffect has a missing dependency: 'supabase'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\page.tsx
+    6:10  warning  'Button' is defined but never used        @typescript-eslint/no-unused-vars
+    7:10  warning  'Badge' is defined but never used         @typescript-eslint/no-unused-vars
+    8:8   warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+   13:3   warning  'Package' is defined but never used       @typescript-eslint/no-unused-vars
+   14:3   warning  'AlertCircle' is defined but never used   @typescript-eslint/no-unused-vars
+   56:3   warning  'id' is defined but never used            @typescript-eslint/no-unused-vars
+  362:58  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  363:18  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  377:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\profile\page.tsx
+  264:106  warning  'AlertCircle' is defined but never used                                                                                                                                                                                                                                                  @typescript-eslint/no-unused-vars
+  299:60   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  310:62   error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  346:16   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  470:43   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  470:49   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  478:41   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  478:47   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  495:9    warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\found\page.tsx
+  2:18  warning  'MapPin' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\home\page.tsx
+    1:8   warning  'Image' is defined but never used         @typescript-eslint/no-unused-vars
+    7:10  warning  'Search' is defined but never used        @typescript-eslint/no-unused-vars
+    7:18  warning  'PlusCircle' is defined but never used    @typescript-eslint/no-unused-vars
+    7:30  warning  'Filter' is defined but never used        @typescript-eslint/no-unused-vars
+   56:52  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:51  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\lost\page.tsx
+   2:18  warning  'MapPin' is defined but never used    @typescript-eslint/no-unused-vars
+  11:10  warning  'Textarea' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\match\page.tsx
+   2:72  warning  'Info' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  23:65  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  23:88  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                          react/no-unescaped-entities
+  49:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  84:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\test\1\page.tsx
+   5:8   warning  'Link' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   6:10  warning  'Search' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   6:41  warning  'Filter' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   6:49  warning  'X' is defined but never used                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+   6:52  warning  'ChevronRight' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+  21:17  warning  'categories' is assigned a value but never used                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  47:52  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                 @typescript-eslint/no-explicit-any
+  97:21  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\app\test_page\test\2\page.tsx
+    5:3   warning  'LineChart' is defined but never used      @typescript-eslint/no-unused-vars
+    5:14  warning  'Line' is defined but never used           @typescript-eslint/no-unused-vars
+    9:34  warning  'ChevronUp' is defined but never used      @typescript-eslint/no-unused-vars
+   14:10  warning  'Progress' is defined but never used       @typescript-eslint/no-unused-vars
+   16:3   warning  'Select' is defined but never used         @typescript-eslint/no-unused-vars
+   17:3   warning  'SelectContent' is defined but never used  @typescript-eslint/no-unused-vars
+   18:3   warning  'SelectItem' is defined but never used     @typescript-eslint/no-unused-vars
+   19:3   warning  'SelectTrigger' is defined but never used  @typescript-eslint/no-unused-vars
+   20:3   warning  'SelectValue' is defined but never used    @typescript-eslint/no-unused-vars
+  131:55  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  138:40  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  145:51  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  156:61  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  181:41  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+  187:25  error    Unexpected any. Specify a different type   @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx
+  11:114  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-explicit-any
+  27:9    error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx:27:9
+  25 |   return (
+  26 |     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 flex justify-around items-center pt-2 pb-6 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">
+> 27 |        <NavItem href="/" icon={Home} label="α╕½α╕Öα╣ëα╕▓α╣üα╕úα╕ü" activeColorClass="text-purple-600" bgActive="bg-purple-50" />
+     |         ^^^^^^^ This component is created during render
+  28 |        <NavItem href="/lost" icon={AlertCircle} label="α╣üα╕êα╣ëα╕çα╕½α╕▓α╕ó" activeColorClass="text-red-600" bgActive="bg-red-50" />
+  29 |        <NavItem href="/found" icon={Package} label="α╣üα╕êα╣ëα╕çα╣Çα╕êα╕¡" activeColorClass="text-green-600" bgActive="bg-green-50" />
+  30 |        <NavItem href="/matches" icon={Sparkles} label="Match" activeColorClass="text-blue-600" bgActive="bg-blue-50" />
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx:11:19
+   9 |
+  10 |   // α╕¬α╕úα╣ëα╕▓α╕ç Component α╕óα╣êα╕¡α╕óα╕¬α╕│α╕½α╕úα╕▒α╕Üα╕¢α╕╕α╣êα╕íα╣üα╕òα╣êα╕Ñα╕░α╕¡α╕▒α╕Ö
+> 11 |   const NavItem = ({ href, label, icon: Icon, activeColorClass, bgActive }: { href: string, label: string, icon: any, activeColorClass: string, bgActive: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |     // α╣Çα╕èα╣çα╕äα╕ºα╣êα╕▓α╕½α╕Öα╣ëα╕▓α╕¢α╕▒α╕êα╕êα╕╕α╕Üα╕▒α╕Öα╕òα╕úα╕çα╕üα╕▒α╕Üα╕Ñα╕┤α╕çα╕üα╣îα╕½α╕úα╕╖α╕¡α╣äα╕íα╣ê
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 22 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |   };
+     | ^^^^ The component is created during render here
+  24 |
+  25 |   return (
+  26 |     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 flex justify-around items-center pt-2 pb-6 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">                                                                                                            react-hooks/static-components
+  28:9    error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx:28:9
+  26 |     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 flex justify-around items-center pt-2 pb-6 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">
+  27 |        <NavItem href="/" icon={Home} label="α╕½α╕Öα╣ëα╕▓α╣üα╕úα╕ü" activeColorClass="text-purple-600" bgActive="bg-purple-50" />
+> 28 |        <NavItem href="/lost" icon={AlertCircle} label="α╣üα╕êα╣ëα╕çα╕½α╕▓α╕ó" activeColorClass="text-red-600" bgActive="bg-red-50" />
+     |         ^^^^^^^ This component is created during render
+  29 |        <NavItem href="/found" icon={Package} label="α╣üα╕êα╣ëα╕çα╣Çα╕êα╕¡" activeColorClass="text-green-600" bgActive="bg-green-50" />
+  30 |        <NavItem href="/matches" icon={Sparkles} label="Match" activeColorClass="text-blue-600" bgActive="bg-blue-50" />
+  31 |        <NavItem href="/profile" icon={User} label="α╕Üα╕▒α╕ìα╕èα╕╡" activeColorClass="text-gray-900" bgActive="bg-gray-100" />
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx:11:19
+   9 |
+  10 |   // α╕¬α╕úα╣ëα╕▓α╕ç Component α╕óα╣êα╕¡α╕óα╕¬α╕│α╕½α╕úα╕▒α╕Üα╕¢α╕╕α╣êα╕íα╣üα╕òα╣êα╕Ñα╕░α╕¡α╕▒α╕Ö
+> 11 |   const NavItem = ({ href, label, icon: Icon, activeColorClass, bgActive }: { href: string, label: string, icon: any, activeColorClass: string, bgActive: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |     // α╣Çα╕èα╣çα╕äα╕ºα╣êα╕▓α╕½α╕Öα╣ëα╕▓α╕¢α╕▒α╕êα╕êα╕╕α╕Üα╕▒α╕Öα╕òα╕úα╕çα╕üα╕▒α╕Üα╕Ñα╕┤α╕çα╕üα╣îα╕½α╕úα╕╖α╕¡α╣äα╕íα╣ê
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 22 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |   };
+     | ^^^^ The component is created during render here
+  24 |
+  25 |   return (
+  26 |     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 flex justify-around items-center pt-2 pb-6 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">  react-hooks/static-components
+  29:9    error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx:29:9
+  27 |        <NavItem href="/" icon={Home} label="α╕½α╕Öα╣ëα╕▓α╣üα╕úα╕ü" activeColorClass="text-purple-600" bgActive="bg-purple-50" />
+  28 |        <NavItem href="/lost" icon={AlertCircle} label="α╣üα╕êα╣ëα╕çα╕½α╕▓α╕ó" activeColorClass="text-red-600" bgActive="bg-red-50" />
+> 29 |        <NavItem href="/found" icon={Package} label="α╣üα╕êα╣ëα╕çα╣Çα╕êα╕¡" activeColorClass="text-green-600" bgActive="bg-green-50" />
+     |         ^^^^^^^ This component is created during render
+  30 |        <NavItem href="/matches" icon={Sparkles} label="Match" activeColorClass="text-blue-600" bgActive="bg-blue-50" />
+  31 |        <NavItem href="/profile" icon={User} label="α╕Üα╕▒α╕ìα╕èα╕╡" activeColorClass="text-gray-900" bgActive="bg-gray-100" />
+  32 |     </div>
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx:11:19
+   9 |
+  10 |   // α╕¬α╕úα╣ëα╕▓α╕ç Component α╕óα╣êα╕¡α╕óα╕¬α╕│α╕½α╕úα╕▒α╕Üα╕¢α╕╕α╣êα╕íα╣üα╕òα╣êα╕Ñα╕░α╕¡α╕▒α╕Ö
+> 11 |   const NavItem = ({ href, label, icon: Icon, activeColorClass, bgActive }: { href: string, label: string, icon: any, activeColorClass: string, bgActive: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |     // α╣Çα╕èα╣çα╕äα╕ºα╣êα╕▓α╕½α╕Öα╣ëα╕▓α╕¢α╕▒α╕êα╕êα╕╕α╕Üα╕▒α╕Öα╕òα╕úα╕çα╕üα╕▒α╕Üα╕Ñα╕┤α╕çα╕üα╣îα╕½α╕úα╕╖α╕¡α╣äα╕íα╣ê
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 22 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |   };
+     | ^^^^ The component is created during render here
+  24 |
+  25 |   return (
+  26 |     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 flex justify-around items-center pt-2 pb-6 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">                                                                                                                                                                                                                          react-hooks/static-components
+  30:9    error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx:30:9
+  28 |        <NavItem href="/lost" icon={AlertCircle} label="α╣üα╕êα╣ëα╕çα╕½α╕▓α╕ó" activeColorClass="text-red-600" bgActive="bg-red-50" />
+  29 |        <NavItem href="/found" icon={Package} label="α╣üα╕êα╣ëα╕çα╣Çα╕êα╕¡" activeColorClass="text-green-600" bgActive="bg-green-50" />
+> 30 |        <NavItem href="/matches" icon={Sparkles} label="Match" activeColorClass="text-blue-600" bgActive="bg-blue-50" />
+     |         ^^^^^^^ This component is created during render
+  31 |        <NavItem href="/profile" icon={User} label="α╕Üα╕▒α╕ìα╕èα╕╡" activeColorClass="text-gray-900" bgActive="bg-gray-100" />
+  32 |     </div>
+  33 |   );
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx:11:19
+   9 |
+  10 |   // α╕¬α╕úα╣ëα╕▓α╕ç Component α╕óα╣êα╕¡α╕óα╕¬α╕│α╕½α╕úα╕▒α╕Üα╕¢α╕╕α╣êα╕íα╣üα╕òα╣êα╕Ñα╕░α╕¡α╕▒α╕Ö
+> 11 |   const NavItem = ({ href, label, icon: Icon, activeColorClass, bgActive }: { href: string, label: string, icon: any, activeColorClass: string, bgActive: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |     // α╣Çα╕èα╣çα╕äα╕ºα╣êα╕▓α╕½α╕Öα╣ëα╕▓α╕¢α╕▒α╕êα╕êα╕╕α╕Üα╕▒α╕Öα╕òα╕úα╕çα╕üα╕▒α╕Üα╕Ñα╕┤α╕çα╕üα╣îα╕½α╕úα╕╖α╕¡α╣äα╕íα╣ê
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 22 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |   };
+     | ^^^^ The component is created during render here
+  24 |
+  25 |   return (
+  26 |     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 flex justify-around items-center pt-2 pb-6 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">                                                                                                                                                                                                                                                                                                                                        react-hooks/static-components
+  31:9    error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx:31:9
+  29 |        <NavItem href="/found" icon={Package} label="α╣üα╕êα╣ëα╕çα╣Çα╕êα╕¡" activeColorClass="text-green-600" bgActive="bg-green-50" />
+  30 |        <NavItem href="/matches" icon={Sparkles} label="Match" activeColorClass="text-blue-600" bgActive="bg-blue-50" />
+> 31 |        <NavItem href="/profile" icon={User} label="α╕Üα╕▒α╕ìα╕èα╕╡" activeColorClass="text-gray-900" bgActive="bg-gray-100" />
+     |         ^^^^^^^ This component is created during render
+  32 |     </div>
+  33 |   );
+  34 | }
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\BottomNav.tsx:11:19
+   9 |
+  10 |   // α╕¬α╕úα╣ëα╕▓α╕ç Component α╕óα╣êα╕¡α╕óα╕¬α╕│α╕½α╕úα╕▒α╕Üα╕¢α╕╕α╣êα╕íα╣üα╕òα╣êα╕Ñα╕░α╕¡α╕▒α╕Ö
+> 11 |   const NavItem = ({ href, label, icon: Icon, activeColorClass, bgActive }: { href: string, label: string, icon: any, activeColorClass: string, bgActive: string }) => {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 12 |     // α╣Çα╕èα╣çα╕äα╕ºα╣êα╕▓α╕½α╕Öα╣ëα╕▓α╕¢α╕▒α╕êα╕êα╕╕α╕Üα╕▒α╕Öα╕òα╕úα╕çα╕üα╕▒α╕Üα╕Ñα╕┤α╕çα╕üα╣îα╕½α╕úα╕╖α╕¡α╣äα╕íα╣ê
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 13 |     const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 22 |     );
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |   };
+     | ^^^^ The component is created during render here
+  24 |
+  25 |   return (
+  26 |     <div className="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-gray-100 flex justify-around items-center pt-2 pb-6 z-50 shadow-[0_-4px_24px_rgba(0,0,0,0.05)] pb-[env(safe-area-inset-bottom)]">                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/static-components
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\CardImage.tsx
+  16:7  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\CreateItemForm.tsx
+  118:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\FilterBox.tsx
+  3:10  warning  'Input' is defined but never used                 @typescript-eslint/no-unused-vars
+  5:10  warning  'useRouter' is defined but never used             @typescript-eslint/no-unused-vars
+  5:21  warning  'useSearchParams' is defined but never used       @typescript-eslint/no-unused-vars
+  6:10  warning  'useDebouncedCallback' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\ItemCard.tsx
+   2:29  warning  'CardFooter' is defined but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  26:9   warning  'getStatusColor' is assigned a value but never used                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  45:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\MobileNav.tsx
+  11:16   warning  'Home' is defined but never used          @typescript-eslint/no-unused-vars
+  11:22   warning  'Search' is defined but never used        @typescript-eslint/no-unused-vars
+  11:30   warning  'PlusCircle' is defined but never used    @typescript-eslint/no-unused-vars
+  11:108  warning  'Workflow' is defined but never used      @typescript-eslint/no-unused-vars
+  16:45   error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\Navbar.tsx
+  5:48  warning  'Search' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\UserNav.tsx
+  21:43  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\login-form.tsx
+  91:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\ui\sidebar.tsx
+  611:26  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\components\ui\sidebar.tsx:611:26
+  609 |   // Random width between 50 to 90%.
+  610 |   const width = React.useMemo(() => {
+> 611 |     return `${Math.floor(Math.random() * 40) + 50}%`
+      |                          ^^^^^^^^^^^^^ Cannot call impure function
+  612 |   }, [])
+  613 |
+  614 |   return (  react-hooks/purity
+
+C:\Users\siric\Documents\All_Project\lost-found-demo\lost-and-found-demo\utils\supabase\middleware-helper.ts
+  18:48  warning  'options' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 147 problems (53 errors, 94 warnings)
+
