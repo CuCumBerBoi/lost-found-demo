@@ -2,22 +2,13 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/lib/supabase-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogOut, User, PlusCircle, Search } from "lucide-react";
-import { Sparkle } from "lucide-react";
-import { Inbox } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 // รับ Props ข้อมูล User เข้ามา (ถ้าเป็น null แปลว่ายังไม่ Login)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function UserNav({ user }: { user: any }) {
     const router = useRouter();
 
@@ -41,7 +32,7 @@ export function UserNav({ user }: { user: any }) {
         );
     }
 
-    // 2. กรณี: Login แล้ว (โชว์รูป + Dropdown)
+    // 2. กรณี: Login แล้ว (โชว์รูป + ปุ่มออกจากระบบ)
     // ดึงชื่อย่อ 2 ตัวแรกมาทำ Avatar (เช่น Kong Sirichai -> KS)
     const initials = user.user_metadata.full_name
         ?.split(" ")
@@ -51,69 +42,27 @@ export function UserNav({ user }: { user: any }) {
         .substring(0, 2) || "U";
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <div className="flex items-center gap-2">
+            {/* Avatar กดแล้วไปหน้าโปรไฟล์โดยตรง */}
+            <Link href="/profile" title="ดูโปรไฟล์">
+                <div className="relative h-10 w-10 rounded-full cursor-pointer ring-2 ring-transparent hover:ring-indigo-400 transition-all duration-200">
                     <Avatar className="h-10 w-10">
-                        {/* ถ้ามีรูปโปรไฟล์ก็โชว์ (ตอนนี้ใช้รูป default ไปก่อน) */}
                         <AvatarImage src={user.user_metadata.avatar_url} alt={user.email} />
                         <AvatarFallback>{initials}</AvatarFallback>
                     </Avatar>
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.user_metadata.full_name}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                            {user.email}
-                        </p>
-                    </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
+                </div>
+            </Link>
 
-                <Link href="/profile">
-                    <DropdownMenuItem className="cursor-pointer">
-                        <User className="mr-2 h-4 w-4" />
-                        <span>โปรไฟล์</span>
-                    </DropdownMenuItem>
-                </Link>
-
-                {/* <Link href="/report-lost">
-                    <DropdownMenuItem className="cursor-pointer">
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        <span>แจ้งของหาย</span>
-                    </DropdownMenuItem>
-                </Link>
-
-                <Link href="/found">
-                    <DropdownMenuItem className="cursor-pointer text-green-600 focus:text-green-700">
-                        <Search className="mr-2 h-4 w-4" />
-                        <span>แจ้งเจอของ</span>
-                    </DropdownMenuItem>
-                </Link>
-
-                <Link href="/inbox">
-                    <DropdownMenuItem className="cursor-pointer">
-                        <Inbox className="mr-2 h-4 w-4" />
-                        <span>กล่องข้อความ / คำขอคืน</span>
-                    </DropdownMenuItem>
-                </Link> */}
-
-                {/* 👇 เพิ่มเมนู Match ตรงนี้ 👇 */}
-                {/* <Link href="/matches">
-                    <DropdownMenuItem className="cursor-pointer bg-gradient-to-r from-yellow-50 to-orange-50 text-orange-700 focus:bg-orange-100">
-                        <Sparkle className="mr-2 h-4 w-4 text-orange-500" />
-                        <span>ระบบจับคู่ (Smart Match)</span>
-                    </DropdownMenuItem>
-                </Link> */}
-
-                {/* <DropdownMenuSeparator /> */}
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>ออกจากระบบ</span>
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+            {/* ปุ่มออกจากระบบอยู่ข้าง Avatar */}
+            <button
+                onClick={handleLogout}
+                title="ออกจากระบบ"
+                aria-label="ออกจากระบบ"
+                className="flex items-center gap-1.5 text-slate-500 hover:text-rose-500 font-bold text-xs px-2.5 py-2 rounded-xl hover:bg-rose-50 transition-all duration-200"
+            >
+                <LogOut size={16} />
+                <span className="hidden sm:inline"></span>
+            </button>
+        </div>
     );
 }

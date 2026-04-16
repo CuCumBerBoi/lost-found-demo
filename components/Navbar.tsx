@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-client";
 import { UserNav } from "./UserNav";
 import { MobileNav } from "./MobileNav";
@@ -14,62 +14,75 @@ import {
   SearchX, 
   Sparkles,
   CheckCircle2,
-  AlertCircle,
   MessageSquare,
-  Check
 } from "lucide-react";
+
+interface NotificationItem {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: 'match' | 'success' | 'system' | 'alert';
+  link?: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+const formatTimeAgo = (dateString: string) => {
+  const now = new Date();
+  const past = new Date(dateString);
+  const diffMs = now.getTime() - past.getTime();
+  const diffMins = Math.round(diffMs / 60000);
+  const diffHrs = Math.round(diffMs / 3600000);
+  const diffDays = Math.round(diffMs / 86400000);
+
+  if (diffMins < 1) return "เมื่อสักครู่";
+  if (diffMins < 60) return `${diffMins} นาทีที่แล้ว`;
+  if (diffHrs < 24) return `${diffHrs} ชั่วโมงที่แล้ว`;
+  if (diffDays === 1) return "เมื่อวานนี้";
+  if (diffDays < 7) return `${diffDays} วันที่แล้ว`;
+  return past.toLocaleDateString("th-TH", { day: 'numeric', month: 'short', year: 'numeric' });
+};
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [user, setUser] = useState<any>(null);
+  
   const pathname = usePathname();
+  const router = useRouter(); 
   const supabase = createClient();
 
-  // 🔔 State สำหรับ Notifications
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(2); // สมมติว่ามี 2 แจ้งเตือนใหม่
+  const [unreadCount, setUnreadCount] = useState(0); 
   const notificationRef = useRef<HTMLDivElement>(null);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
-  // ข้อมูลจำลองสำหรับการแจ้งเตือน (เปลี่ยนเป็นดึงจาก Supabase ได้ในอนาคต)
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: "พบสิ่งของที่อาจเป็นของคุณ!",
-      message: "ระบบ AI พบกระเป๋าสตางค์สีดำที่คล้ายกับที่คุณแจ้งหายไว้ ลองตรวจสอบดูสิ",
-      type: "match",
-      time: "10 นาทีที่แล้ว",
-      is_read: false,
-    },
-    {
-      id: 2,
-      title: "คำขอรับของคืนได้รับการอนุมัติ",
-      message: "แอดมินตรวจสอบหลักฐานขวดน้ำ AquaFlask ของคุณเรียบร้อยแล้ว กรุณาติดต่อรับของ",
-      type: "success",
-      time: "2 ชั่วโมงที่แล้ว",
-      is_read: false,
-    },
-    {
-      id: 3,
-      title: "ยินดีต้อนรับสู่ FoundIt.",
-      message: "เริ่มต้นใช้งานระบบแจ้งของหายและตามหาของด้วย AI ได้เลย",
-      type: "system",
-      time: "1 วันที่แล้ว",
-      is_read: true,
-    }
-  ]);
-
-  // 1. จัดการเอฟเฟกต์การเปลี่ยนสีพื้นหลังเมื่อเลื่อนหน้าจอ
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 2. ตรวจสอบสถานะการเข้าสู่ระบบและอัปเดตแบบ Real-time
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      
+      if (user) {
+        setUser(user);
+
+        const { data: userData } = await supabase
+          .from("users")
+          .select("role")
+          .eq("user_id", user.id)
+          .single();
+
+        if (userData?.role === "admin") {
+          router.replace("/admin");
+        }
+      } else {
+        setUser(null);
+      }
     };
     getUser();
 
@@ -78,9 +91,9 @@ export function Navbar() {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // 3. ปิด Notification Dropdown เมื่อคลิกที่อื่นบนหน้าจอ
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
@@ -91,68 +104,123 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ฟังก์ชันกดอ่านการแจ้งเตือนทั้งหมด
-  const markAllAsRead = () => {
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const fetchNotifications = async () => {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (!error && data) {
+        setNotifications(data as NotificationItem[]);
+        setUnreadCount(data.filter(n => !n.is_read).length);
+      }
+    };
+
+    fetchNotifications();
+
+    const subscription = supabase
+      .channel('public:notifications')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'notifications', 
+        filter: `user_id=eq.${user.id}` 
+      }, (payload) => {
+        const newNotif = payload.new as NotificationItem;
+        setNotifications((prev) => [newNotif, ...prev]);
+        setUnreadCount((prev) => prev + 1);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  const markAllAsRead = async () => {
+    if (!user) return;
+
     setNotifications(notifications.map(n => ({ ...n, is_read: true })));
     setUnreadCount(0);
+
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', user.id)
+      .eq('is_read', false);
   };
 
-  // รายการเมนูหลักสำหรับ Desktop
+  const handleNotificationClick = async (notif: NotificationItem) => {
+    if (!notif.is_read) {
+      setNotifications(notifications.map(n => n.id === notif.id ? { ...n, is_read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      await supabase.from('notifications').update({ is_read: true }).eq('id', notif.id);
+    }
+    
+    if (notif.link) {
+      setIsNotificationOpen(false);
+      router.push(notif.link);
+    }
+  };
+
   const menuItems = [
-    { label: "หน้าแรก", icon: LayoutDashboard, href: "/" },
-    { label: "แจ้งพบสิ่งของ", icon: SearchCheck, href: "/found" },
-    { label: "แจ้งของหาย", icon: SearchX, href: "/lost" },
-    { label: "รายการจับคู่", icon: Sparkles, href: "/matches" },
+    { label: "หน้าแรก", href: "/" },
+    { label: "แจ้งพบ", href: "/found" },
+    { label: "แจ้งหาย", href: "/lost" },
+    { label: "รายการจับคู่", href: "/matches" },
   ];
 
-  const hideNavbarPages = ["/login", "/register", "/signup"];
-  if (hideNavbarPages.includes(pathname)) {
-    return null; // คืนค่า null = ไม่แสดง Navbar
+  const hideNavbarPages = ["/login", "/register", "/signup", "/admin"];
+  if (hideNavbarPages.includes(pathname) || pathname.startsWith("/admin")) {
+    return null;
   }
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-        scrolled
-          ? "bg-white/80 backdrop-blur-xl border-b border-slate-200/50 shadow-sm py-3"
-          : "bg-transparent py-5"
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        scrolled || pathname !== "/"
+          ? "bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-sm py-4"
+          : "bg-transparent py-6"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         
         {/* 🌟 ฝั่งซ้าย: Logo & Branding */}
         <div className="flex items-center gap-2">
-          <div className="lg:hidden mr-1">
+          <div className="md:hidden mr-1">
             <MobileNav user={user} />
           </div>
           
-          <Link href="/" className="flex items-center cursor-pointer group">
-            <div className="bg-indigo-600 text-white p-2.5 rounded-2xl mr-3 shadow-lg shadow-indigo-200 group-hover:rotate-6 transition-transform duration-300">
-              <PackageSearch size={22} strokeWidth={2.5} />
+          <Link href="/" className="flex items-center cursor-pointer group gap-2.5">
+            <div className="bg-slate-900 text-white p-2 rounded-xl group-hover:bg-indigo-600 transition-colors duration-300">
+              <PackageSearch size={20} strokeWidth={2.5} />
             </div>
-            <div className="flex flex-col">
-              <span className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 tracking-tighter">
-                FoundIt.
-              </span>
-            </div>
+            <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              FoundIt.
+            </span>
           </Link>
         </div>
 
-        {/* 🖥️ ตรงกลาง: Desktop Navigation (ซ่อนในมือถือ) */}
-        <div className="hidden lg:flex items-center bg-slate-100/50 p-1.5 rounded-full border border-slate-200/40 backdrop-blur-md">
+        {/* 🖥️ ตรงกลาง: Desktop Navigation (สไตล์คลีนแบบในภาพ) */}
+        <div className="hidden md:flex items-center gap-8 lg:gap-10">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative px-5 py-2 text-sm font-bold rounded-full transition-all duration-300 flex items-center gap-2 ${
+                className={`text-[15px] font-semibold transition-colors duration-200 ${
                   isActive
-                    ? "text-indigo-600 bg-white shadow-sm ring-1 ring-slate-200"
-                    : "text-slate-500 hover:text-slate-900"
+                    ? "text-indigo-600"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                <item.icon size={16} className={isActive ? "text-indigo-600" : "text-slate-400"} />
                 {item.label}
               </Link>
             );
@@ -160,27 +228,26 @@ export function Navbar() {
         </div>
 
         {/* 🔔 ฝั่งขวา: Actions & Profile */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4 lg:gap-6">
           
           {/* ระบบแจ้งเตือน (Notifications) */}
-          <div className="relative" ref={notificationRef}>
+          <div className="relative flex items-center" ref={notificationRef}>
             <button 
               onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-              className={`p-2.5 rounded-2xl transition-all relative group ${
-                isNotificationOpen ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-indigo-600 hover:bg-indigo-50'
+              className={`p-1.5 transition-colors relative ${
+                isNotificationOpen ? 'text-indigo-600' : 'text-slate-700 hover:text-indigo-600'
               }`}
               aria-label="แจ้งเตือน"
             >
-              <Bell size={20} className={unreadCount > 0 ? "animate-pulse" : ""} />
+              <Bell size={22} className={unreadCount > 0 ? "animate-pulse" : ""} strokeWidth={2} />
               {unreadCount > 0 && (
-                <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
+                <span className="absolute top-1 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
               )}
             </button>
 
-            {/* Dropdown Box */}
+            {/* Dropdown Box (ยังคงรูปแบบเดิมไว้) */}
             {isNotificationOpen && (
-              <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-3xl shadow-[0_10px_40px_rgb(0,0,0,0.08)] border border-slate-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200">
-                {/* Header */}
+              <div className="absolute right-[-60px] sm:right-0 top-full mt-4 w-80 sm:w-96 bg-white rounded-3xl shadow-[0_10px_40px_rgb(0,0,0,0.08)] border border-slate-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-200">
                 <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                   <h3 className="font-bold text-slate-800">การแจ้งเตือน</h3>
                   {unreadCount > 0 && (
@@ -193,12 +260,12 @@ export function Navbar() {
                   )}
                 </div>
 
-                {/* Notification List */}
                 <div className="max-h-[350px] overflow-y-auto">
                   {notifications.length > 0 ? (
                     notifications.map((notif) => (
                       <div 
                         key={notif.id} 
+                        onClick={() => handleNotificationClick(notif)}
                         className={`p-4 flex gap-3 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 cursor-pointer ${notif.is_read ? 'opacity-70' : 'bg-indigo-50/30'}`}
                       >
                         <div className="shrink-0 mt-1">
@@ -214,7 +281,7 @@ export function Navbar() {
                             {notif.message}
                           </p>
                           <span className="text-[10px] text-slate-400 mt-2 block font-medium">
-                            {notif.time}
+                            {formatTimeAgo(notif.created_at)}
                           </span>
                         </div>
                         {!notif.is_read && (
@@ -232,7 +299,6 @@ export function Navbar() {
                   )}
                 </div>
 
-                {/* Footer */}
                 <div className="p-3 border-t border-slate-100 bg-slate-50 text-center">
                   <button className="text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors">
                     ดูการแจ้งเตือนทั้งหมด
@@ -241,8 +307,6 @@ export function Navbar() {
               </div>
             )}
           </div>
-
-          <div className="h-6 w-[1px] bg-slate-200 mx-1 hidden sm:block"></div>
 
           {/* เมนูจัดการผู้ใช้ (User Dropdown) */}
           <UserNav user={user} />

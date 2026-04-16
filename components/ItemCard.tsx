@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { MapPin, Calendar } from "lucide-react"; 
+import { MapPin, Clock, Image as ImageIcon } from "lucide-react"; 
 
-// สร้าง Interface กลาง ที่รับได้ทั้ง Lost และ Found
+// ==========================================
+// 📦 Interface
+// ==========================================
 export interface CommonItem {
   id: string;
   title: string;
@@ -11,10 +11,12 @@ export interface CommonItem {
   location_text: string;
   date: string;
   status: string;
-  type: 'LOST' | 'FOUND'; // ตัวบอกประเภท
+  type: 'LOST' | 'FOUND'; 
   categories: {
     name: string;
   } | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ai_metadata?: any; // เพิ่มรับค่า ai_metadata เพื่อเอามาทำ Tag
 }
 
 interface ItemProps {
@@ -22,103 +24,99 @@ interface ItemProps {
 }
 
 export function ItemCard({ item }: ItemProps) {
-  // เลือกสี Badge ตามสถานะ
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'AVAILABLE': return "default";
-      case 'SEARCHING': return "destructive";
-      case 'RETURNED': return "secondary";
-      default: return "outline";
+  const linkHref = item.type === 'FOUND' ? `/item/${item.id}` : `/item/${item.id}`;
+
+  // 🏷️ ฟังก์ชันสร้างรายการ Tags จากข้อมูลที่มี
+  const getTags = () => {
+    const tags: string[] = [];
+    
+    // 1. ใส่หมวดหมู่
+    if (item.categories?.name) tags.push(item.categories.name);
+    
+    // 2. ใส่แบรนด์ และ สี จาก AI
+    if (item.ai_metadata) {
+      if (item.ai_metadata.brand && item.ai_metadata.brand !== "ไม่ระบุ") {
+        tags.push(item.ai_metadata.brand);
+      }
+      if (item.ai_metadata.color && item.ai_metadata.color !== "ไม่ระบุ") {
+        // ถ้าสีมีหลายสีคั่นด้วยลูกน้ำ ให้แยกออกมา (เช่น "แดง, ดำ" -> ["แดง", "ดำ"])
+        const colors = item.ai_metadata.color.split(',').map((c: string) => c.trim());
+        tags.push(...colors);
+      }
     }
+    
+    // คืนค่าเฉพาะ 3-4 แท็กแรกเพื่อไม่ให้การ์ดรกเกินไป
+    return tags.slice(0, 4);
   };
 
-  // ลิงก์ไปหน้า Detail แยกตามประเภท
-  const linkHref = item.type === 'FOUND' ? `/found/${item.id}` : `/item/${item.id}`;
+  const displayTags = getTags();
 
   return (
-    <Link href={linkHref}>
-      <Card className="overflow-hidden bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer h-full flex flex-col group hover:scale-[1.02] hover:border-gray-200">
+    <Link href={linkHref} className="h-full block">
+      <div className="bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-lg hover:border-slate-200 transition-all duration-300 flex flex-col h-full group overflow-hidden cursor-pointer">
         
-        {/* Image Container */}
-        <div className="relative h-48 w-full bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+        {/* 📸 Image Section */}
+        <div className="relative aspect-square w-full bg-slate-50 overflow-hidden">
           {item.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={item.image_url}
               alt={item.title}
-              className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500"
+              className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
-            <div className="flex items-center justify-center h-full text-gray-400">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-2 bg-white rounded-full flex items-center justify-center shadow-sm">
-                  <MapPin className="w-8 h-8 text-gray-300" />
-                </div>
-                <p className="text-sm font-light">No Image</p>
-              </div>
+            <div className="flex flex-col items-center justify-center h-full text-slate-300">
+              <ImageIcon size={32} className="mb-2 opacity-50" />
+              <p className="text-xs font-bold">ไม่มีรูปภาพ</p>
             </div>
           )}
           
-          {/* Type Badge - Top Right */}
+          {/* ป้ายกำกับ หาย/เจอ (มุมขวาบน) */}
           <div className="absolute top-3 right-3">
-            <Badge 
-              className={`${
-                item.type === 'FOUND' 
-                  ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700' 
-                  : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'
-              } text-white border-0 shadow-lg text-xs font-bold px-3 py-1 rounded-xl`}
-            >
-              {item.type === 'FOUND' ? '🎁 เจอ' : '🔍 หาย'}
-            </Badge>
+            <span className={`px-2.5 py-1 text-[10px] font-black text-white rounded-lg shadow-sm ${
+              item.type === 'FOUND' ? 'bg-emerald-500' : 'bg-rose-500'
+            }`}>
+              {item.type === 'FOUND' ? 'พบสิ่งของ' : 'ของหาย'}
+            </span>
           </div>
         </div>
 
-        {/* Content */}
-        <CardContent className="p-4 flex-1 flex flex-col">
-          {/* Category Badge */}
-          <div className="mb-3">
-            <Badge 
-              variant="outline" 
-              className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200 text-purple-700 text-xs font-medium px-3 py-1 rounded-xl"
-            >
-              {item.categories?.name || "อื่นๆ"}
-            </Badge>
-          </div>
-
-          {/* Title */}
-          <h3 className="font-bold text-lg text-gray-900 line-clamp-2 mb-3 min-h-[56px] group-hover:text-gray-700 transition-colors">
+        {/* 📝 Content Section */}
+        <div className="p-4 flex-1 flex flex-col">
+          <h3 className="font-bold text-slate-900 text-base line-clamp-2 mb-3 group-hover:text-indigo-600 transition-colors">
             {item.title}
           </h3>
           
-          {/* Details */}
-          <div className="text-sm text-gray-500 space-y-2 mt-auto font-light">
-            <div className="flex items-center gap-2">
-              <MapPin size={14} className="text-gray-400 flex-shrink-0" />
-              <span className="line-clamp-1">{item.location_text}</span>
+          {/* 🏷️ Tags สไตล์ Minimal */}
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {displayTags.map((tag, idx) => (
+              <span 
+                key={idx} 
+                className="bg-slate-50 border border-slate-200/60 text-slate-600 px-2.5 py-1 rounded-xl text-[10px] font-bold"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          
+          {/* 📍 Details (ดันลงล่างสุดเสมอ) */}
+          <div className="text-[11px] sm:text-xs text-slate-500 space-y-1.5 mt-auto font-medium">
+            <div className="flex items-center gap-1.5">
+              <MapPin size={14} className="text-slate-400 shrink-0" />
+              <span className="truncate">{item.location_text}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Calendar size={14} className="text-gray-400 flex-shrink-0" />
+            <div className="flex items-center gap-1.5">
+              <Clock size={14} className="text-slate-400 shrink-0" />
               <span>
+                {item.type === 'FOUND' ? 'พบเมื่อ ' : 'หายเมื่อ '}
                 {new Date(item.date).toLocaleDateString("th-TH", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
+                  day: "numeric", month: "short", year: "numeric",
                 })}
               </span>
             </div>
           </div>
-        </CardContent>
-
-        {/* Footer - Hover Action */}
-        <div className="px-4 pb-4">
-          <div className="h-0 group-hover:h-10 overflow-hidden transition-all duration-300">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200 rounded-xl px-3 py-2 text-center">
-              <span className="text-xs font-bold text-gray-700">
-                {item.type === 'FOUND' ? 'ดูรายละเอียด →' : 'ดูข้อมูล →'}
-              </span>
-            </div>
-          </div>
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }

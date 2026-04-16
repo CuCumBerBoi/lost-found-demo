@@ -16,6 +16,9 @@ import {
   Building2,
   Layers,
   DoorOpen,
+  MapPin,
+  Clock,
+  ImageIcon,
 } from "lucide-react";
 import { analyzeImage as _analyzeImage } from "@/app/actions/gemini";
 import Link from "next/link";
@@ -30,12 +33,14 @@ interface AIMetadata {
   color: string;
   brand: string;
   type: string;
+  characteristic?: string;
 }
 
 interface FormData {
   title: string;
   category_id: string;
   building: string;
+  floor: string;
   room: string;
   location_text: string;
   date_found: string;
@@ -45,7 +50,9 @@ interface FormData {
 export default function ReportFoundPage() {
   const router = useRouter();
   const supabase = createClient();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [analyzing, setAnalyzing] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
@@ -57,9 +64,10 @@ export default function ReportFoundPage() {
     title: "",
     category_id: "",
     building: "",
+    floor: "",
     room: "",
     location_text: "",
-    date_found: "", // จะถูกเซ็ตค่าใน useEffect ด้านล่าง
+    date_found: "", 
     description: "",
   });
 
@@ -107,25 +115,39 @@ export default function ReportFoundPage() {
       // ส่งให้ AI วิเคราะห์เฉพาะรูปแรก
       if (!aiMetadata && !analyzing) {
         setAnalyzing(true);
-        const toastId = toast.loading("Gemini กำลังวิเคราะห์รูปภาพ...");
+        const toastId = toast.loading("ระบบกำลังวิเคราะห์ข้อมูล...");
 
         try {
-          const aiResult = await _analyzeImage(base64String);
+          const categoryNames = categories.map(c => c.name);
+          const aiResult = await _analyzeImage(base64String, categoryNames);
 
-          if (aiResult) {
-            const matchedCategory = categories.find((c) => c.name === aiResult.category_name);
-            const catId = matchedCategory?.category_id || matchedCategory?.id || "";
+          if (aiResult?.success && aiResult.data) {
+            const data = aiResult.data;
+            const cleanName = data.category_name?.replace(/['"]/g, "").trim() || "";
+            let matchedCategory = categories.find((c) => c.name.trim().toLowerCase() === cleanName.toLowerCase());
+            
+            if (!matchedCategory) {
+              matchedCategory = categories.find((c) => c.name.toLowerCase().includes(cleanName.toLowerCase()) || cleanName.toLowerCase().includes(c.name.toLowerCase()));
+            }
+            if (!matchedCategory) {
+              matchedCategory = categories.find((c) => c.name === "อื่นๆ" || c.name === "Other");
+            }
+            if (!matchedCategory && categories.length > 0) {
+              matchedCategory = categories[0];
+            }
 
-            setAiMetadata(aiResult.ai_metadata);
+            let catId = matchedCategory?.category_id || matchedCategory?.id || "";
+
+            setAiMetadata(data.ai_metadata);
             setFormData((prev) => ({
               ...prev,
-              title: aiResult.title || prev.title,
-              description: aiResult.description || prev.description,
+              title: data.title || prev.title,
+              description: data.description || prev.description,
               category_id: catId,
             }));
             toast.success("AI สกัดข้อมูลสำเร็จ!", { id: toastId });
           } else {
-            toast.error("วิเคราะห์ไม่สำเร็จ กรุณากรอกข้อมูลเอง", { id: toastId });
+            toast.error("วิเคราะห์ภาพไม่สำเร็จ", { id: toastId, description: aiResult?.error || "ไม่สามารถสกัดข้อมูลจากภาพนี้ได้" });
           }
         } catch (error) {
           console.error(error);
@@ -145,11 +167,16 @@ export default function ReportFoundPage() {
     setUploadedImages((prev) => prev.filter((_, index) => index !== indexToRemove));
     if (uploadedImages.length <= 1) {
       setAiMetadata(null);
+      setFormData((prev) => ({
+        ...prev,
+        title: "",
+        description: "",
+      }));
     }
   };
 
   const handleSubmit = async () => {
-    if (!formData.title || !formData.category_id || !formData.building || !formData.room) {
+    if (!formData.title || !formData.building || !formData.floor || !formData.category_id) {
       toast.error("กรุณากรอก ชื่อสิ่งของ หมวดหมู่ อาคาร และชั้น ให้ครบถ้วน");
       return;
     }
@@ -186,11 +213,12 @@ export default function ReportFoundPage() {
       // 2. บันทึกข้อมูลลงตาราง found_items
       const { error } = await supabase.from("found_items").insert({
         title: formData.title,
-        description: formData.description,
+        category_id: formData.category_id,
+        description: formData.description, // คอลัมน์ที่เกิดปัญหาหากไม่มีใน Supabase
         building: formData.building,
         room: formData.room,
+        floor: formData.floor, // ✅ ใช้ State floor
         location_text: formData.location_text,
-        category_id: formData.category_id,
         date_found: formData.date_found || new Date().toISOString(),
         user_id: user.id,
         image_url: uploadedUrls[0],
@@ -199,13 +227,24 @@ export default function ReportFoundPage() {
         status: "AVAILABLE",
       });
 
-      if (error) throw error;
+      if (error) {
+        // ✅ ดักจับ Error กรณีคอลัมน์ description หายไปโดยเฉพาะ
+        if (error.message?.includes("Could not find the 'description' column")) {
+          throw new Error("ฐานข้อมูลไม่มีคอลัมน์ 'description' กรุณาไปเพิ่มคอลัมน์ชื่อนี้ (ชนิด text) ในตาราง found_items ที่ Supabase");
+        }
+        throw error;
+      }
 
       toast.success("บันทึกข้อมูลและประกาศสำเร็จ!");
       router.push("/"); // กลับไปหน้ากระดาน
     } catch (error: any) {
-      console.error(error);
-      toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล", { description: error.message });
+      console.error("Supabase Insert Error:", JSON.stringify(error, null, 2));
+      
+      // แสดงข้อความ Error ที่ชัดเจนบนหน้าจอแทนที่จะพัง
+      toast.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล", { 
+        description: error.message || JSON.stringify(error),
+        duration: 8000 // ให้อยู่บนจอนานขึ้นเพื่อให้อ่านทัน
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -217,10 +256,6 @@ export default function ReportFoundPage() {
         
         {/* 🌟 Header Section */}
         <div className='text-center mb-8 sm:mb-12'>
-          {/* <div className='inline-flex items-center space-x-1.5 sm:space-x-2 bg-emerald-50 text-emerald-600 px-3 sm:px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold mb-4 border border-emerald-100'>
-            <Camera size={14} className='sm:w-4 sm:h-4' />
-            <span>ประกาศของที่เก็บได้</span>
-          </div> */}
           <h1 className='text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight mb-3'>
             แจ้งข้อมูลสิ่งของที่พบ
           </h1>
@@ -232,30 +267,56 @@ export default function ReportFoundPage() {
 
         {/* 📸 Image Upload Section */}
         <div className='mb-8 sm:mb-10'>
+          {/* 1. Input สำหรับถ่ายรูป (บังคับเปิดกล้องหลัง) */}
           <input
-            aria-label='อัปโหลดรูปภาพ'
-            title='อัปโหลดรูปภาพ'
+            id='camera-input'
+            type='file'
+            accept='image/*'
+            capture='environment'
+            className='hidden'
+            ref={cameraInputRef}
+            onChange={handleImageUpload}
+            aria-label='ถ่ายรูปสิ่งของที่พบ'
+            title='ถ่ายรูปสิ่งของที่พบ'
+          />
+          {/* 2. Input สำหรับเลือกจากคลังภาพ */}
+          <input
+            id='gallery-input'
             type='file'
             accept='image/*'
             className='hidden'
-            ref={fileInputRef}
+            ref={galleryInputRef}
             onChange={handleImageUpload}
+            aria-label='เลือกรูปสิ่งของจากคลังภาพ'
+            title='เลือกรูปสิ่งของจากคลังภาพ'
           />
 
           {uploadedImages.length === 0 ? (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className='relative overflow-hidden rounded-2xl sm:rounded-[2rem] p-6 sm:p-8 text-center transition-all duration-300 cursor-pointer active:scale-[0.98] flex flex-col items-center justify-center min-h-[200px] sm:min-h-[240px] border-2 border-dashed border-slate-300 bg-white hover:bg-emerald-50/50 hover:border-emerald-300 group shadow-sm'
-            >
-              <div className='w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 shadow-sm rounded-full flex items-center justify-center mb-4 sm:mb-5 border border-slate-100 group-hover:scale-110 transition-transform duration-300'>
-                <UploadCloud className='text-emerald-500' size={32} strokeWidth={1.5} />
+            <div className='bg-white border-2 border-dashed border-slate-300 rounded-[2rem] p-6 sm:p-8 flex flex-col items-center justify-center min-h-[240px] shadow-sm'>
+              <div className='w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-5 border border-emerald-100'>
+                <UploadCloud className='text-emerald-500' size={32} />
               </div>
-              <h3 className='text-lg sm:text-xl font-bold text-slate-800 mb-1.5'>
-                อัปโหลดรูปภาพ
-              </h3>
-              <p className='text-slate-500 mb-4 text-xs sm:text-sm font-medium'>
-                สูงสุด 5 รูป (ขนาดไม่เกิน 10MB)
+              <h3 className='text-lg font-bold text-slate-800 mb-2'>เพิ่มรูปภาพสิ่งของ</h3>
+              <p className='text-slate-500 text-sm font-medium mb-6 text-center'>
+                เลือกถ่ายรูปใหม่ หรืออัปโหลดจากคลังภาพ <br className="sm:hidden" />(สูงสุด 5 รูป)
               </p>
+              
+              <div className='flex flex-col sm:flex-row gap-3 w-full max-w-sm'>
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  className='flex-1 flex items-center justify-center gap-2 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-sm active:scale-95'
+                >
+                  <Camera size={18} />
+                  ถ่ายรูป
+                </button>
+                <button
+                  onClick={() => galleryInputRef.current?.click()}
+                  className='flex-1 flex items-center justify-center gap-2 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-all active:scale-95'
+                >
+                  <ImageIcon size={18} />
+                  คลังภาพ
+                </button>
+              </div>
             </div>
           ) : analyzing ? (
             <div className='relative overflow-hidden rounded-2xl sm:rounded-[2rem] p-6 sm:p-8 text-center border-2 border-indigo-400 bg-indigo-50/50 shadow-[0_0_40px_rgba(99,102,241,0.2)] flex flex-col items-center justify-center min-h-[200px] sm:min-h-[240px]'>
@@ -272,9 +333,8 @@ export default function ReportFoundPage() {
                 <Sparkles size={12} className='mr-1' /> วิเคราะห์สำเร็จ
               </div>
 
-              <div className='flex gap-3 sm:gap-4 overflow-x-auto pb-2 px-2 mt-6 sm:mt-8 -mx-2 pt-2'>
+              <div className='flex gap-3 sm:gap-4 overflow-x-auto pb-2 px-2 mt-6 sm:mt-8 -mx-2 pt-2 scrollbar-hide'>
                 {uploadedImages.map((img, i) => (
-                  /* ✅ นำ overflow-hidden ออกจากกรอบครอบภาพ เพื่อให้ปุ่ม X ไม่โดนตัด */
                   <div key={i} className='w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center border border-slate-200 relative shrink-0 shadow-sm group'>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={img.url} alt='Uploaded item' className='w-full h-full object-cover rounded-xl sm:rounded-2xl' />
@@ -287,21 +347,30 @@ export default function ReportFoundPage() {
                     >
                       <X size={14} strokeWidth={2.5} />
                     </button>
-                    {/* Badge แสดงลำดับรูป */}
                     <span className='absolute bottom-1 right-1 bg-black/60 text-white px-1.5 py-0.5 rounded text-[9px] font-bold'>
                       {i + 1}
                     </span>
                   </div>
                 ))}
 
+                {/* ปุ่มเพิ่มรูปภาพ (แยกเป็น 2 ปุ่มบน-ล่างให้กดง่ายขึ้น) */}
                 {uploadedImages.length < 5 && (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className='w-20 h-20 sm:w-24 sm:h-24 lg:w-28 lg:h-28 bg-white border-2 border-dashed border-slate-300 rounded-xl sm:rounded-2xl flex flex-col items-center justify-center text-slate-500 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-600 transition-colors shrink-0 active:scale-95'
-                  >
-                    <Plus size={20} className='mb-1' />
-                    <span className='text-[10px] sm:text-xs font-bold'>เพิ่มรูป</span>
-                  </button>
+                  <div className='flex flex-col gap-2 shrink-0'>
+                    <button
+                      onClick={() => cameraInputRef.current?.click()}
+                      className='w-20 h-[36px] sm:w-24 sm:h-[44px] bg-white border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center text-slate-500 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-600 transition-colors active:scale-95'
+                      title="ถ่ายรูปเพิ่ม"
+                    >
+                      <Camera size={16} />
+                    </button>
+                    <button
+                      onClick={() => galleryInputRef.current?.click()}
+                      className='w-20 h-[36px] sm:w-24 sm:h-[44px] bg-white border-2 border-dashed border-slate-300 rounded-xl flex items-center justify-center text-slate-500 hover:bg-emerald-50 hover:border-emerald-400 hover:text-emerald-600 transition-colors active:scale-95'
+                      title="เลือกจากคลังเพิ่ม"
+                    >
+                      <ImageIcon size={16} />
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -313,69 +382,73 @@ export default function ReportFoundPage() {
           
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 to-teal-500"></div>
 
-          <div className='space-y-5 sm:space-y-8'>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8'>
+          {/* Form Fields Section */}
+          <div className='p-6 sm:p-10 lg:p-12 space-y-6 sm:space-y-8'>
+            <div className="pt-2">
+              <label className='block text-sm sm:text-base font-bold text-slate-900 mb-5 pb-3 border-b border-slate-100 flex items-center justify-between'>
+                <span className="flex items-center gap-2">📋 ข้อมูลสิ่งของ</span>
+                {aiMetadata && <span className="text-[10px] sm:text-xs font-bold bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full border border-indigo-100 flex items-center gap-1.5"><Sparkles size={12}/> ระบบช่วยวิเคราะห์แล้ว</span>}
+              </label>
+
+              <div className='grid grid-cols-1 md:grid-cols-1 gap-5 sm:gap-6 mb-6'>
+                <div>
+                  <label htmlFor='title' className='block text-sm font-bold text-slate-700 mb-2'>
+                    ชื่อสิ่งของ <span className='text-rose-500'>*</span>
+                  </label>
+                  <input
+                    id='title'
+                    type='text'
+                    name='title'
+                    value={formData.title}
+                    onChange={handleChange}
+                    placeholder='เช่น หูฟังไร้สาย, กุญแจรถ'
+                    className='w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none text-slate-800 text-sm font-medium resize-none placeholder:font-normal placeholder:text-slate-400'
+                  />
+                </div>
+
+              </div>
+
               <div>
-                <label className='block text-sm font-bold text-slate-700 mb-2'>
+                <label htmlFor='category_id' className='block text-sm font-bold text-slate-700 mb-2'>
                   หมวดหมู่ <span className='text-rose-500'>*</span>
                 </label>
-                {/* ✅ ใช้ placeholder:font-normal เพื่อให้ข้อความตัวอย่างดูบางลง */}
+                
                 <select
-                  aria-label='หมวดหมู่'
-                  title='หมวดหมู่'
+                  id='category_id'
                   name='category_id'
+                  title='หมวดหมู่'
+                  aria-label='หมวดหมู่'
                   value={formData.category_id}
                   onChange={handleChange}
-                  className={`w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none text-sm font-medium ${!formData.category_id ? "text-slate-400 font-normal" : "text-slate-800"}`}
+                  className={`w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-medium ${!formData.category_id ? "text-slate-400 font-normal" : "text-slate-800"}`}
                 >
-                  <option value='' disabled>เลือกหมวดหมู่สิ่งของ...</option>
-                  {categories.map((cat, idx) => {
-                    const catId = cat.category_id || cat.id || `fallback-cat-${idx}`;
-                    return <option key={catId} value={catId}>{cat.name}</option>;
-                  })}
+                  <option value=''>เลือกหมวดหมู่...</option>
+                  {categories.map((cat) => (
+                    <option key={cat.category_id || cat.id} value={cat.category_id || cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
                 </select>
-              </div>
 
-              <div>
-                <label className='block text-sm font-bold text-slate-700 mb-2'>
-                  ลักษณะ <span className="text-slate-400 font-normal text-xs ml-1">(ระบบช่วยวิเคราะห์)</span>
-                </label>
-                <div className='w-full min-h-[48px] sm:min-h-[52px] px-4 sm:px-5 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center flex-wrap gap-2'>
-                  {aiMetadata ? (
-                    <>
-                      {aiMetadata.color && <span className='px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded text-[10px] sm:text-xs font-bold'>{aiMetadata.color}</span>}
-                      {aiMetadata.brand && aiMetadata.brand !== "ไม่ระบุ" && <span className='px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded text-[10px] sm:text-xs font-bold'>{aiMetadata.brand}</span>}
-                      {aiMetadata.type && <span className='px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded text-[10px] sm:text-xs font-bold'>{aiMetadata.type}</span>}
-                    </>
-                  ) : (
-                    <span className='text-sm text-slate-400 font-normal'>
-                      อัปโหลดรูปภาพด้านบน
-                    </span>
-                  )}
-                </div>
+                {aiMetadata && (
+                  <div className='w-full px-4 sm:px-5 py-2.5 sm:py-3 bg-indigo-50/30 border border-indigo-50 rounded-xl flex flex-col gap-2 mt-3'>
+                    <span className="text-xs font-bold text-indigo-400">ข้อมูลที่ AI ตรวจพบเพิ่มเติม:</span>
+                    <div className="flex items-center flex-wrap gap-2.5">
+                      {aiMetadata.brand && aiMetadata.brand !== "ไม่ระบุ" && <span className='px-3 py-1.5 bg-white border border-indigo-100 text-indigo-700 rounded-lg text-xs font-bold shadow-sm'>🏷️ {aiMetadata.brand}</span>}
+                      {aiMetadata.color && <span className='px-3 py-1.5 bg-white border border-indigo-100 text-indigo-700 rounded-lg text-xs font-bold shadow-sm'>🎨 {aiMetadata.color}</span>}
+                      {aiMetadata.type && <span className='px-3 py-1.5 bg-white border border-indigo-100 text-indigo-700 rounded-lg text-xs font-bold shadow-sm'>📦 {aiMetadata.type}</span>}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div>
-              <label className='block text-sm font-bold text-slate-700 mb-2'>
-                ชื่อสิ่งของ <span className='text-rose-500'>*</span>
-              </label>
-              {/* ✅ เพิ่ม placeholder:font-normal placeholder:text-slate-400 */}
-              <input
-                type='text'
-                name='title'
-                value={formData.title}
-                onChange={handleChange}
-                placeholder='เช่น หูฟังไร้สาย, กระติกน้ำสีเขียว'
-                className='w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all outline-none font-bold text-sm sm:text-base text-slate-900 placeholder:font-normal placeholder:text-slate-400'
-              />
-            </div>
-
-            <div>
-              <label className='block text-sm font-bold text-slate-700 mb-2'>
-                รายละเอียดเพิ่มเติม
+            <div className="pt-2">
+              <label htmlFor='description' className='block text-sm font-bold text-slate-700 mb-2'>
+                รายละเอียด
               </label>
               <textarea
+                id='description'
                 name='description'
                 value={formData.description}
                 onChange={handleChange}
@@ -385,19 +458,20 @@ export default function ReportFoundPage() {
               />
             </div>
 
-            <div className="pt-2">
-              <label className='block text-sm sm:text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100'>
-                📍 สถานที่ที่พบเจอ
+            <div className="pt-4 mt-8">
+              <label className='block text-sm sm:text-base font-bold text-slate-900 mb-5 pb-3 border-b border-slate-100 flex items-center gap-2'>
+                <MapPin size={18} className="text-emerald-500" /> สถานที่ที่พบ
               </label>
-              {/* ✅ ปรับเป็น 3 คอลัมน์ติดกัน */}
-              <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5'>
+              
+              <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 mb-8'>
                 <div>
-                  <label className='block text-xs font-bold text-slate-600 mb-2'>
+                  <label htmlFor='building' className='block text-xs font-bold text-slate-600 mb-2'>
                     อาคาร <span className='text-rose-500'>*</span>
                   </label>
                   <div className='relative'>
                     <Building2 size={16} className='absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' />
                     <select
+                      id='building'
                       aria-label='อาคาร'
                       title='อาคาร'
                       name='building'
@@ -413,33 +487,34 @@ export default function ReportFoundPage() {
                 </div>
 
                 <div>
-                  <label className='block text-xs font-bold text-slate-600 mb-2'>
+                  <label htmlFor='floor' className='block text-xs font-bold text-slate-600 mb-2'>
                     ชั้น <span className='text-rose-500'>*</span>
                   </label>
                   <div className='relative'>
                     <Layers size={16} className='absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' />
                     <select
+                      id='floor'
                       aria-label='ชั้น'
                       title='ชั้น'
-                      name='room'
-                      value={formData.room}
+                      name='floor' // ✅ ผูก State floor
+                      value={formData.floor}
                       onChange={handleChange}
-                      className={`w-full pl-9 sm:pl-11 pr-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-medium appearance-none ${!formData.room ? "text-slate-400 font-normal" : "text-slate-800"}`}
+                      className={`w-full pl-9 sm:pl-11 pr-4 py-2.5 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-sm font-medium appearance-none ${!formData.floor ? "text-slate-400 font-normal" : "text-slate-800"}`}
                     >
-                      <option value=''>เลือกชั้น...</option>
-                      <option value='ไม่ระบุ'>ไม่ทราบแน่ชัด</option>
+                      <option value=''>ชั้น...</option>
                       {Array.from({ length: 22 }, (_, i) => i + 1).map((floor) => (
-                        <option key={floor} value={`ชั้น ${floor}`}>ชั้น {floor}</option>
+                        <option key={floor} value={`ชั้น ${floor}`}> {floor}</option>
                       ))}
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className='block text-xs font-bold text-slate-600 mb-2'>ห้อง / บริเวณ </label>
+                  <label htmlFor='location_text' className='block text-xs font-bold text-slate-600 mb-2'>ห้อง / บริเวณ </label>
                   <div className='relative'>
                     <DoorOpen size={16} className='absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400' />
                     <input
+                      id='location_text'
                       aria-label='ห้อง'
                       title='ห้อง'
                       type='text'
@@ -452,21 +527,25 @@ export default function ReportFoundPage() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label className='block text-sm font-bold text-slate-700 mb-2'>
-                วันที่และเวลาที่พบ <span className='text-rose-500'>*</span>
-              </label>
-              <input
-                aria-label='วันที่และเวลาที่พบ'
-                title='วันที่และเวลาที่พบ'
-                type='datetime-local'
-                name='date_found'
-                value={formData.date_found}
-                onChange={handleChange}
-                className='w-full px-4 sm:px-5 py-3 sm:py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 text-sm font-medium'
-              />
+              <div className="pt-2">
+                <label htmlFor='date_found' className='block text-sm font-bold text-slate-700 mb-2'>
+                  วันที่และเวลาที่พบ <span className='text-rose-500'>*</span>
+                </label>
+                <div className='relative'>
+                   <Clock size={16} className='absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none' />
+                   <input
+                     id='date_found'
+                     aria-label='วันที่และเวลาที่พบ'
+                     title='วันที่และเวลาที่พบ'
+                     type='datetime-local'
+                     name='date_found'
+                     value={formData.date_found}
+                     onChange={handleChange}
+                     className='w-full pl-9 sm:pl-11 pr-4 py-3 sm:py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none text-slate-800 text-sm font-medium'
+                   />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -490,7 +569,7 @@ export default function ReportFoundPage() {
                 <ShieldCheck size={18} className='mr-2' />
               )}
               <span className='truncate'>
-                {isSubmitting ? "กำลังส่งข้อมูล..." : "ประกาศเจอของ"}
+                {isSubmitting ? "กำลังส่งข้อมูล..." : "ยืนยัน"}
               </span>
             </button>
           </div>

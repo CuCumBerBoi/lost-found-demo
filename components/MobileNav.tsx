@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Sheet,
   SheetContent,
@@ -8,21 +11,27 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Home, Search, PlusCircle, User, LogIn, ChevronRight, LayoutDashboard, SearchCheck, SearchX, Workflow, Info, Sparkles, PackageSearch } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { 
+  Menu, 
+  LayoutDashboard, 
+  SearchCheck, 
+  SearchX, 
+  Sparkles, 
+  UserCircle2,
+  PackageSearch
+} from "lucide-react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function MobileNav({ user }: { user: any }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  // ปรับเหลือแค่ข้อมูลพื้นฐาน ถอดสีเฉพาะเจาะจงออกเพื่อความมินิมอล
   const menuItems = [
-    { label: "หน้าแรก", icon: LayoutDashboard, href: "/", color: "text-purple-600" },
-    { label: "แจ้งพบสิ่งของ", icon: SearchCheck, href: "/found", color: "text-green-600" },
-    { label: "แจ้งของหาย", icon: SearchX, href: "/lost", color: "text-red-600" },
-    { label: "ระบบช่วยจับคู่", icon: Sparkles, href: "/matches", color: "text-blue-600" },
-    // { label: "ช่วยเหลือ", icon: Info, href: "/help", color: "text-gray-600" },
+    { label: "หน้าแรก", icon: LayoutDashboard, href: "/" },
+    { label: "แจ้งพบสิ่งของ", icon: SearchCheck, href: "/found" },
+    { label: "แจ้งของหาย", icon: SearchX, href: "/lost" },
+    { label: "ระบบช่วยจับคู่", icon: Sparkles, href: "/matches" },
   ];
 
   return (
@@ -31,35 +40,65 @@ export function MobileNav({ user }: { user: any }) {
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden hover:bg-white/50 backdrop-blur-sm rounded-xl transition-all"
+          className="md:hidden hover:bg-slate-100/50 backdrop-blur-sm rounded-2xl transition-all"
+          aria-label="เปิดเมนู"
         >
-          <Menu className="h-6 w-6" />
+          <Menu className="h-[22px] w-[22px] text-slate-700" />
         </Button>
       </SheetTrigger>
 
       <SheetContent
         side="left"
-        className="w-[320px] bg-white backdrop-blur-xl border-r border-gray-100 p-0"
+        className="w-[300px] sm:w-[340px] bg-white border-r border-slate-200 p-0 flex flex-col h-full"
       >
-        {/* Header */}
-        <SheetHeader className="bg-gradient-to-r from-purple-50/80 to-white/80 border-b border-gray-100 px-6 py-6">
-          <SheetTitle className="text-left">
-            <div className="flex items-center gap-3">
-              <div className="bg-indigo-600 text-white p-2.5 rounded-2xl mr-3 shadow-lg shadow-indigo-200 group-hover:rotate-6 transition-transform duration-300">
-                <PackageSearch size={22} strokeWidth={2.5} />
-              </div>
-              <div>
-                <span className="text-xl sm:text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 tracking-tighter">
-                  FoundIt.
-                </span>
-                <p className="text-xs text-gray-500 font-light mt-0.5">ระบบ......................</p>
-              </div>
-            </div>
-          </SheetTitle>
+        <SheetHeader className="sr-only">
+          <SheetTitle>เมนูนำทาง</SheetTitle>
         </SheetHeader>
 
-        {/* Menu Items */}
-        <div className="flex flex-col gap-2 p-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 180px)' }}>
+        {/* 👤 Header Section: User Profile (สไตล์ตามภาพอ้างอิง) */}
+        <div className="px-6 py-10 border-b border-slate-100 shrink-0">
+          {user ? (
+            <Link 
+              href="/profile" 
+              onClick={() => setOpen(false)}
+              className="flex flex-col gap-4 group cursor-pointer"
+            >
+              <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200 overflow-hidden shadow-sm group-hover:shadow-md transition-all">
+                <UserCircle2 className="w-8 h-8 text-slate-400" />
+                {/* หากมีรูปโปรไฟล์สามารถใส่แท็ก <img src={user.image} ... /> ตรงนี้ได้ */}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-base font-bold text-slate-900 group-hover:text-black transition-colors">
+                  โปรไฟล์ของฉัน
+                </span>
+                <span className="text-sm text-slate-500 font-medium">
+                  {user.email?.split('@')[0]}
+                </span>
+              </div>
+            </Link>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
+                <UserCircle2 className="w-8 h-8 text-slate-300" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <span className="text-base font-bold text-slate-900">
+                  ผู้เยี่ยมชม
+                </span>
+                <Link
+                  href="/login"
+                  onClick={() => setOpen(false)}
+                  className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 w-fit"
+                >
+                  เข้าสู่ระบบ / ลงทะเบียน
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 📋 Menu Items */}
+        <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-1.5">
           {menuItems.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -67,96 +106,32 @@ export function MobileNav({ user }: { user: any }) {
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 group ${isActive
-                  ? "bg-gradient-to-r from-purple-50 to-purple-100 border-2 border-purple-200 shadow-md"
-                  : "bg-white/50 border-2 border-transparent hover:bg-gray-50 hover:border-gray-200 hover:shadow-sm"
-                  }`}
+                className={`flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-200 ${
+                  isActive
+                    ? "bg-slate-100 text-slate-900"
+                    : "bg-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-xl transition-all ${isActive
-                    ? "bg-white shadow-sm"
-                    : "bg-gray-50 group-hover:bg-white group-hover:shadow-sm"
-                    }`}>
-                    <item.icon
-                      className={`w-5 h-5 ${isActive ? item.color : "text-gray-400 group-hover:" + item.color
-                        }`}
-                    />
-                  </div>
-                  <span className={`font-medium ${isActive ? "text-gray-900" : "text-gray-600 group-hover:text-gray-900"
-                    }`}>
-                    {item.label}
-                  </span>
-                </div>
-                <ChevronRight
-                  size={18}
-                  className={`transition-all duration-300 ${isActive
-                    ? "text-purple-600 opacity-100 translate-x-0"
-                    : "text-gray-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-1"
-                    }`}
+                <item.icon
+                  size={22}
+                  strokeWidth={isActive ? 2.5 : 2}
+                  className={isActive ? "text-slate-900" : "text-slate-500"}
                 />
+                <span className={`text-[15px] ${isActive ? "font-bold" : "font-medium"}`}>
+                  {item.label}
+                </span>
               </Link>
             );
           })}
-
-          {/* Divider */}
-          <div className="relative my-2">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-white px-3 text-xs text-gray-400 font-medium">บัญชี</span>
-            </div>
-          </div>
-
-          {/* User Section */}
-          {user ? (
-            <Link
-              href="/profile"
-              onClick={() => setOpen(false)}
-              className="flex items-center justify-between p-4 rounded-2xl transition-all duration-300 group bg-gradient-to-r from-blue-50/50 to-white/50 border-2 border-transparent hover:from-blue-50 hover:to-blue-100/50 hover:border-blue-200 hover:shadow-sm"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-100 to-blue-200 shadow-sm">
-                  <User className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <span className="font-medium text-gray-900 block">โปรไฟล์ของฉัน</span>
-                  <span className="text-xs text-gray-500 font-light">{user.email?.split('@')[0]}</span>
-                </div>
-              </div>
-              <ChevronRight
-                size={18}
-                className="text-gray-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"
-              />
-            </Link>
-          ) : (
-            <Link
-              href="/login"
-              onClick={() => setOpen(false)}
-              className="flex items-center justify-between p-4 rounded-2xl transition-all duration-300 group bg-gradient-to-r from-green-50/50 to-white/50 border-2 border-transparent hover:from-green-50 hover:to-green-100/50 hover:border-green-200 hover:shadow-sm"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-xl bg-gradient-to-br from-green-100 to-green-200 shadow-sm">
-                  <LogIn className="w-5 h-5 text-green-600" />
-                </div>
-                <span className="font-medium text-gray-900">เข้าสู่ระบบ</span>
-              </div>
-              <ChevronRight
-                size={18}
-                className="text-gray-300 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300"
-              />
-            </Link>
-          )}
         </div>
 
-        {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-gray-50/80 to-transparent border-t border-gray-100 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-gray-500 font-light">© 2024 CU Lost & Found</p>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-              <span className="text-xs text-gray-400 font-light">Online</span>
-            </div>
+        {/* 🌟 Footer Section: Logo (ย้ายโลโก้มาไว้ด้านล่าง) */}
+        <div className="p-6 shrink-0 mt-auto opacity-40 pointer-events-none">
+          <div className="flex items-center gap-2.5">
+            <PackageSearch size={20} strokeWidth={2.5} className="text-slate-800" />
+            <span className="text-lg font-black bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-500 tracking-tighter">
+              FoundIt.
+            </span>
           </div>
         </div>
       </SheetContent>

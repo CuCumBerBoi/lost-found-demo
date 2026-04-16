@@ -2,521 +2,387 @@
 
 import React, { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase-client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { 
-  Mail, 
-  Settings, 
-  LogOut, 
-  Trash2, 
-  Check, 
-  MapPin, 
-  Clock, 
-  Search, 
-  PackageSearch, 
-  Sparkles, 
-  User,
-  Loader2,
-  Image as ImageIcon,
-  FileText,
-  AlertCircle,
+import {
+  UserCircle2,
+  Clock,
   CheckCircle2,
-  XCircle
+  XCircle,
+  PackageSearch,
+  MapPin,
+  Trash2,
+  Image as ImageIcon,
+  Edit3,
+  SearchX,
+  ChevronRight,
+  ShieldCheck,
+  Package,
+  Loader2
 } from "lucide-react";
 
 // ==========================================
 // 📦 Interfaces
 // ==========================================
-interface UserProfile {
-  user_id: string;
-  full_name: string | null;
-  profile_url: string | null;
-  role: string | null;
-}
-
-interface ProfileItem {
+interface Claim {
   id: string;
-  title: string;
-  image_url: string | null;
-  location_text: string;
-  date: string;
-  status: string;
-  type: 'LOST' | 'FOUND';
-  category_name: string;
-}
-
-interface ClaimItem {
-  id: string;
-  item_id: string;
-  title: string;
-  image_url: string | null;
-  location_text: string;
   status: string;
   created_at: string;
+  found_item: {
+    id: string;
+    title: string;
+    building: string;
+    room: string;
+    location_text: string;
+    image_url: string | null;
+  };
 }
 
-// ==========================================
-// 🚀 Main Profile Page Component
-// ==========================================
+interface UserPost {
+  id: string;
+  title: string;
+  type: 'lost' | 'found';
+  status: string;
+  created_at: string;
+  location: string;
+  image_url: string | null;
+}
+
 export default function ProfilePage() {
   const router = useRouter();
   const supabase = createClient();
-
+  const [activeTab, setActiveTab] = useState<"claims" | "my_posts">("claims");
+  const [myClaims, setMyClaims] = useState<Claim[]>([]);
+  const [myPosts, setMyPosts] = useState<UserPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [lostItems, setLostItems] = useState<ProfileItem[]>([]);
-  const [foundItems, setFoundItems] = useState<ProfileItem[]>([]);
-  const [claimItems, setClaimItems] = useState<ClaimItem[]>([]);
+  const [userProfile, setUserProfile] = useState<{ email: string; name: string } | null>(null);
 
   useEffect(() => {
     fetchUserData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUserData = async () => {
     try {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
         router.push("/login");
         return;
       }
-      setCurrentUser(user);
 
-      // 1. ดึงโปรไฟล์
-      const profileRes = await supabase.from("users").select("*").eq("user_id", user.id).single();
-      setUserProfile(profileRes.data);
+      // ดึงข้อมูลโปรไฟล์ผู้ใช้
+      const { data: userData } = await supabase
+        .from("users")
+        .select("full_name, email")
+        .eq("user_id", user.id)
+        .single();
 
-      // 2. ดึงของที่หาย
-      const lostRes = await supabase.from("lost_items").select("*, categories(name)").eq("user_id", user.id).order("created_at", { ascending: false });
+      setUserProfile({
+        email: user.email || "",
+        name: userData?.full_name || "ผู้ใช้งานระบบ"
+      });
 
-      // 3. ดึงของที่เจอ
-      const foundRes = await supabase.from("found_items").select("*, categories(name)").eq("user_id", user.id).order("created_at", { ascending: false });
+      // ดึงข้อมูลประวัติการขอรับคืน (Claims)
+      const { data: claimsData } = await supabase
+        .from("claims")
+        .select(`
+          id:claim_id, 
+          status, 
+          created_at, 
+          found_item:found_items(id:found_id, title, building, room, location_text, image_url)
+        `)
+        .eq("claimer_id", user.id)
+        .order("created_at", { ascending: false });
 
-      // 4. ดึงคำขอยืนยันสิทธิ์ (Claims)
-      const claimsRes = await supabase.from("claims").select("*").eq("claimer_id", user.id).order("created_at", { ascending: false });
-      
-      const rawClaims = claimsRes.data || [];
-      const mappedClaims: ClaimItem[] = [];
-      
-      // 🛠️ ปรับลดความซับซ้อนของโครงสร้าง Loop เพื่อป้องกัน Turbopack Panic
-      for (const claim of rawClaims) {
-        let foundItem = null;
-        const targetId = claim.found_id || claim.item_id;
-
-        if (targetId) {
-          // สเต็ปที่ 1: หาใน found_items ด้วย found_id
-          const f1 = await supabase.from("found_items").select("title, image_url, images, location_text").eq("found_id", targetId).maybeSingle();
-          if (f1.data) foundItem = f1.data;
-
-          // สเต็ปที่ 2: ถ้าไม่เจอ ลองหาใน found_items ด้วย id
-          if (!foundItem) {
-            const f2 = await supabase.from("found_items").select("title, image_url, images, location_text").eq("id", targetId).maybeSingle();
-            if (f2.data) foundItem = f2.data;
-          }
-
-          // สเต็ปที่ 3: เผื่อเป็นของในตาราง lost_items หาด้วย lost_id
-          if (!foundItem) {
-            const l1 = await supabase.from("lost_items").select("title, image_url, images, location_text").eq("lost_id", targetId).maybeSingle();
-            if (l1.data) foundItem = l1.data;
-          }
-
-          // สเต็ปที่ 4: หาในตาราง lost_items ด้วย id
-          if (!foundItem) {
-            const l2 = await supabase.from("lost_items").select("title, image_url, images, location_text").eq("id", targetId).maybeSingle();
-            if (l2.data) foundItem = l2.data;
-          }
-        }
-
-        mappedClaims.push({
-          id: claim.id,
-          status: claim.status,
-          created_at: claim.created_at,
-          item_id: targetId,
-          title: foundItem?.title || "ประกาศนี้อาจถูกลบไปแล้ว",
-          image_url: foundItem?.image_url || (foundItem?.images && foundItem.images.length > 0 ? foundItem.images[0] : null),
-          location_text: foundItem?.location_text || "ไม่ระบุสถานที่",
-        });
+      if (claimsData) {
+        setMyClaims(claimsData as unknown as Claim[]);
       }
 
-      // Map ข้อมูล Lost
-      setLostItems((lostRes.data || []).map((item: any) => ({
-        id: item.id || item.lost_id,
-        title: item.title,
-        image_url: item.image_url || (item.images && item.images.length > 0 ? item.images[0] : null),
-        location_text: item.location_text,
-        date: item.date_lost,
-        status: item.status,
-        type: 'LOST',
-        category_name: item.categories?.name || "ไม่ระบุหมวดหมู่"
-      })));
+      // ดึงข้อมูลประกาศของฉัน (Lost & Found Posts)
+      const [{ data: lostData }, { data: foundData }] = await Promise.all([
+        supabase.from("lost_items").select("*").eq("user_id", user.id),
+        supabase.from("found_items").select("*").eq("user_id", user.id)
+      ]);
 
-      // Map ข้อมูล Found
-      setFoundItems((foundRes.data || []).map((item: any) => ({
-        id: item.id || item.found_id,
-        title: item.title,
-        image_url: item.image_url || (item.images && item.images.length > 0 ? item.images[0] : null),
-        location_text: item.location_text,
-        date: item.date_found,
-        status: item.status,
-        type: 'FOUND',
-        category_name: item.categories?.name || "ไม่ระบุหมวดหมู่"
-      })));
+      const formattedPosts: UserPost[] = [];
 
-      setClaimItems(mappedClaims);
+      // จัดรูปแบบข้อมูลของที่หาย (Lost)
+      if (lostData) {
+        formattedPosts.push(...lostData.map((item: any) => ({
+          id: item.id || item.lost_id,
+          title: item.title,
+          type: 'lost' as const,
+          status: item.status || 'SEARCHING',
+          created_at: item.created_at,
+          location: item.location_text || item.building || "ไม่ระบุสถานที่",
+          image_url: null // ของหายมักจะไม่มีรูป
+        })));
+      }
+
+      // จัดรูปแบบข้อมูลของที่เจอ (Found)
+      if (foundData) {
+        formattedPosts.push(...foundData.map((item: any) => ({
+          id: item.id || item.found_id,
+          title: item.title,
+          type: 'found' as const,
+          status: item.status || 'AVAILABLE',
+          created_at: item.created_at,
+          location: item.location_text || item.building || "ไม่ระบุสถานที่",
+          image_url: item.image_url
+        })));
+      }
+
+      // เรียงลำดับจากโพสต์ล่าสุดไปเก่าสุด
+      setMyPosts(formattedPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
 
     } catch (error) {
-      console.error("Error fetching profile:", error);
-      toast.error("ไม่สามารถโหลดข้อมูลโปรไฟล์ได้");
+      console.error("Error fetching profile data:", error);
+      toast.error("ดึงข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast.success("ออกจากระบบสำเร็จ");
-    router.push("/login");
-  };
+  const handleDeletePost = async (id: string, type: 'lost' | 'found', title: string) => {
+    if (!window.confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบประกาศ "${title}" ออกจากระบบ?`)) return;
 
-  const handleDelete = async (id: string, type: 'LOST' | 'FOUND') => {
-    if (!window.confirm("คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?")) return;
     try {
-      const table = type === 'LOST' ? 'lost_items' : 'found_items';
-      const { error } = await supabase.from(table).delete().eq('id', id); 
+      const table = type === 'lost' ? 'lost_items' : 'found_items';
+      const pkColumn = type === 'lost' ? 'lost_id' : 'found_id';
+
+      // ลองลบด้วย Primary Key เฉพาะตาราง
+      const { error } = await supabase.from(table).delete().eq(pkColumn, id);
+
+      // Fallback เผื่อใช้ id ธรรมดา
       if (error) {
-        const fallbackColumn = type === 'LOST' ? 'lost_id' : 'found_id';
-        const { error: err2 } = await supabase.from(table).delete().eq(fallbackColumn, id);
-        if (err2) throw err2;
+        await supabase.from(table).delete().eq('id', id);
       }
-      toast.success("ลบรายการสำเร็จ");
-      if (type === 'LOST') setLostItems(prev => prev.filter(item => item.id !== id));
-      else setFoundItems(prev => prev.filter(item => item.id !== id));
-    } catch (error: any) {
-      toast.error("เกิดข้อผิดพลาดในการลบ: " + error.message);
+
+      toast.success("ลบประกาศสำเร็จเรียบร้อย");
+      setMyPosts(prev => prev.filter(p => p.id !== id));
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast.error("เกิดข้อผิดพลาดในการลบประกาศ");
     }
   };
 
-  const handleResolve = async (id: string, type: 'LOST' | 'FOUND') => {
-    if (!window.confirm("ทำเครื่องหมายว่าจบงาน (หาของเจอแล้ว หรือ คืนของแล้ว)?")) return;
-    try {
-      const table = type === 'LOST' ? 'lost_items' : 'found_items';
-      const newStatus = type === 'LOST' ? 'RESOLVED' : 'RETURNED';
-      const { error } = await supabase.from(table).update({ status: newStatus }).eq('id', id);
-      if (error) {
-        const fallbackColumn = type === 'LOST' ? 'lost_id' : 'found_id';
-        const { error: err2 } = await supabase.from(table).update({ status: newStatus }).eq(fallbackColumn, id);
-        if (err2) throw err2;
-      }
-      toast.success("อัปเดตสถานะสำเร็จ");
-      fetchUserData(); 
-    } catch (error: any) {
-      toast.error("เกิดข้อผิดพลาดในการอัปเดต: " + error.message);
-    }
-  };
+  // ==========================================
+  // 🎨 Helper: ฟังก์ชันกำหนดสไตล์สถานะ Claim
+  // ==========================================
+  const getStatusUI = (status: string) => {
+    const s = status.toUpperCase();
+    if (s === 'PENDING' || s === 'NEED_MORE_INFO')
+      return { text: "รอตรวจสอบ", bg: "bg-amber-50", textCol: "text-amber-600", border: "border-amber-200", icon: Clock };
+    if (s === 'APPROVED')
+      return { text: "อนุมัติแล้ว", bg: "bg-indigo-50", textCol: "text-indigo-600", border: "border-indigo-200", icon: ShieldCheck };
+    if (s === 'READY_FOR_PICKUP')
+      return { text: "เตรียมนัดรับ", bg: "bg-blue-50", textCol: "text-blue-600", border: "border-blue-200", icon: Package };
+    if (s === 'COMPLETED')
+      return { text: "รับของแล้ว", bg: "bg-emerald-50", textCol: "text-emerald-600", border: "border-emerald-200", icon: CheckCircle2 };
+    if (s === 'REJECTED')
+      return { text: "ปฏิเสธคำขอ", bg: "bg-rose-50", textCol: "text-rose-600", border: "border-rose-200", icon: XCircle };
 
-  const handleCancelClaim = async (claimId: string) => {
-    if (!window.confirm("คุณต้องการยกเลิกคำขอยืนยันสิทธิ์นี้ใช่หรือไม่?")) return;
-    try {
-      const { error } = await supabase.from("claims").delete().eq('id', claimId);
-      if (error) throw error;
-      toast.success("ยกเลิกคำขอสำเร็จ");
-      setClaimItems(prev => prev.filter(claim => claim.id !== claimId));
-    } catch (error: any) {
-      toast.error("ยกเลิกคำขอไม่สำเร็จ: " + error.message);
-    }
+    return { text: status, bg: "bg-slate-50", textCol: "text-slate-600", border: "border-slate-200", icon: Clock };
   };
 
   if (loading) {
     return (
-      <div className='min-h-screen bg-[#FAFAFA] flex flex-col items-center justify-center gap-4'>
-        <Loader2 className='w-12 h-12 text-indigo-600 animate-spin' />
-        <p className='text-slate-500 font-bold uppercase tracking-widest text-sm animate-pulse'>กำลังโหลดข้อมูลโปรไฟล์...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
+        <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
       </div>
     );
   }
 
-  const initials = userProfile?.full_name?.substring(0, 2).toUpperCase() || currentUser?.email?.substring(0, 2).toUpperCase() || "ME";
-
   return (
-    <div className="min-h-screen bg-[#FAFAFA] text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900">
-      
-      <main className="max-w-5xl mx-auto pt-28 sm:pt-32 pb-24 sm:pb-16 px-4 sm:px-6 lg:px-8 animate-in fade-in duration-500">
-        
-        {/* 🌟 Profile Header Card */}
-        <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-6 sm:p-8 mb-10 flex flex-col sm:flex-row items-center sm:items-start gap-6 relative overflow-hidden">
-          <div className="h-24 w-24 sm:h-28 sm:w-28 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center text-white text-3xl font-black border-4 border-white shadow-lg shrink-0 rotate-3 hover:rotate-0 transition-transform">
-            {userProfile?.profile_url ? (
-               // eslint-disable-next-line @next/next/no-img-element
-               <img src={userProfile.profile_url} alt="Profile" className="w-full h-full object-cover rounded-[1.25rem]" />
-            ) : (
-               initials
-            )}
+    <div className='min-h-screen bg-[#FAFAFA] pb-24'>
+      {/* 🌟 Header Profile Section */}
+      <div className='bg-white border-b border-slate-200 pt-28 pb-12 px-4 shadow-sm'>
+        <div className='max-w-4xl mx-auto flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left'>
+
+          <div className='w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full flex items-center justify-center shrink-0 border-4 border-white shadow-md'>
+            <UserCircle2 className='w-12 h-12 text-indigo-500' strokeWidth={1.5} />
           </div>
-          
-          <div className="text-center sm:text-left flex-1 mt-2 sm:mt-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{userProfile?.full_name || "ไม่ได้ตั้งชื่อ"}</h1>
-            <p className="text-slate-500 flex items-center justify-center sm:justify-start gap-1.5 mt-1.5 text-sm sm:text-base font-medium">
-              <Mail size={16} className="text-slate-400" /> {currentUser?.email}
-            </p>
-            <div className="flex gap-2 justify-center sm:justify-start flex-wrap mt-4">
-                <span className="bg-indigo-50 text-indigo-600 px-3 py-1.5 text-xs font-bold rounded-xl border border-indigo-100 flex items-center gap-1">
-                  <User size={14} /> {userProfile?.role || "ผู้ใช้งานทั่วไป"}
-                </span>
+
+          <div className='flex-1'>
+            <h1 className='text-2xl sm:text-3xl font-black text-slate-900 tracking-tight'>
+              {userProfile?.name}
+            </h1>
+            <p className='text-slate-500 font-medium mt-1'>{userProfile?.email}</p>
+
+            <div className='flex flex-wrap justify-center sm:justify-start gap-6 mt-4'>
+              <div className='px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 text-sm font-bold text-slate-700 shadow-sm'>
+                คำขอรับของคืน<span className="text-indigo-600 ml-1">{myClaims.length}</span> รายการ
+              </div>
+              <div className='px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 text-sm font-bold text-slate-700 shadow-sm'>
+                ประกาศของฉัน<span className="text-indigo-600 ml-1">{myPosts.length}</span> รายการ
+              </div>
             </div>
-          </div>
-          
-          <div className="flex w-full sm:w-auto gap-3 mt-4 sm:mt-2">
-             <button className="flex-1 sm:flex-none px-4 py-3 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-sm font-bold hover:bg-slate-100 transition-colors flex items-center justify-center gap-2 active:scale-95">
-               <Settings size={16}/> <span className="sm:hidden lg:inline">ตั้งค่า</span>
-             </button>
-             <button onClick={handleLogout} className="flex-1 sm:flex-none px-4 py-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl text-sm font-bold hover:bg-rose-100 transition-colors flex items-center justify-center gap-2 active:scale-95">
-               <LogOut size={16}/> <span className="sm:hidden lg:inline">ออกระบบ</span>
-             </button>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-14">
-          
-          {/* 📋 Section 0: ติดตามสถานะขอรับของคืน (Claims) */}
-          <section>
-            <div className="flex justify-between items-end mb-6 px-1">
-               <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-500 border border-indigo-100 shrink-0">
-                    <FileText size={24} />
-                  </div>
-                  <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">ติดตามสถานะขอรับของคืน</h2>
-                    <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">สิ่งของที่คุณยืนยันสิทธิ์ความเป็นเจ้าของ</p>
-                  </div>
-               </div>
-               <div className="bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm mb-1 flex items-center">
-                 {claimItems.length} รายการ
-               </div>
-            </div>
+      <main className='max-w-4xl mx-auto px-4 sm:px-6 mt-8'>
 
-            {claimItems.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {claimItems.map((claim) => (
-                  <ClaimCard key={claim.id} claim={claim} onCancel={handleCancelClaim} />
-                ))}
-              </div>
-            ) : (
-              <div className="py-12 flex flex-col items-center justify-center text-center bg-white rounded-[2rem] border border-slate-100 shadow-sm border-dashed">
-                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                    <FileText size={28} className="text-slate-300" />
-                 </div>
-                 <h3 className="text-base font-bold text-slate-900 mb-1">ยังไม่มีประวัติการขอยืนยันสิทธิ์</h3>
-                 <p className="text-slate-500 text-sm max-w-sm font-medium px-4">เมื่อคุณพบของตัวเองและกดขอรับคืน สถานะจะแสดงที่นี่</p>
-              </div>
-            )}
-          </section>
-
-          {/* 🔍 Section 1: ของที่ฉันทำหาย (Lost Items) */}
-          <section>
-            <div className="flex justify-between items-end mb-6 px-1">
-               <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-500 border border-rose-100 shrink-0">
-                    <Search size={24} />
-                  </div>
-                  <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">ประวัติแจ้งของหาย</h2>
-                    <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">รายการที่คุณกำลังตามหา</p>
-                  </div>
-               </div>
-               <div className="bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm mb-1">
-                 {lostItems.length} รายการ
-               </div>
-            </div>
-
-            {lostItems.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {lostItems.map((item) => (
-                  <ProfileCard key={item.id} item={item} theme="rose" onDelete={handleDelete} onResolve={handleResolve} />
-                ))}
-              </div>
-            ) : (
-              <div className="py-12 flex flex-col items-center justify-center text-center bg-white rounded-[2rem] border border-slate-100 shadow-sm border-dashed">
-                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                    <Search size={28} className="text-slate-300" />
-                 </div>
-                 <h3 className="text-base font-bold text-slate-900 mb-1">ยังไม่มีประวัติแจ้งของหาย</h3>
-                 <Link href="/lost" className="mt-4 px-6 py-2.5 bg-rose-50 text-rose-600 font-bold rounded-xl hover:bg-rose-100 transition-colors text-sm active:scale-95">
-                   + สร้างประกาศของหาย
-                 </Link>
-              </div>
-            )}
-          </section>
-
-          {/* 🎁 Section 2: ของที่ฉันเจอ (Found Items) */}
-          <section>
-            <div className="flex justify-between items-end mb-6 px-1">
-               <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 border border-emerald-100 shrink-0">
-                    <PackageSearch size={24} />
-                  </div>
-                  <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">ประวัติแจ้งเจอของ</h2>
-                    <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">สิ่งของที่คุณเก็บได้และกำลังหาเจ้าของ</p>
-                  </div>
-               </div>
-               <div className="bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm mb-1">
-                 {foundItems.length} รายการ
-               </div>
-            </div>
-
-            {foundItems.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {foundItems.map((item) => (
-                  <ProfileCard key={item.id} item={item} theme="emerald" onDelete={handleDelete} onResolve={handleResolve} />
-                ))}
-              </div>
-            ) : (
-              <div className="py-12 flex flex-col items-center justify-center text-center bg-white rounded-[2rem] border border-slate-100 shadow-sm border-dashed">
-                 <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                    <PackageSearch size={28} className="text-slate-300" />
-                 </div>
-                 <h3 className="text-base font-bold text-slate-900 mb-1">คุณยังไม่เคยแจ้งเจอของ</h3>
-                 <Link href="/found" className="mt-4 px-6 py-2.5 bg-emerald-50 text-emerald-600 font-bold rounded-xl hover:bg-emerald-100 transition-colors text-sm active:scale-95">
-                   + ประกาศแจ้งเจอของ
-                 </Link>
-              </div>
-            )}
-          </section>
-
+        {/* 📑 Tabs Navigation */}
+        <div className='flex bg-slate-200/50 p-1.5 rounded-2xl mb-8 w-full max-w-md mx-auto sm:mx-0'>
+          <button
+            onClick={() => setActiveTab("claims")}
+            className={`flex-1 py-2.5 font-bold rounded-xl transition-all text-sm ${activeTab === "claims" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              }`}
+          >
+            สถานะขอรับของคืน
+          </button>
+          <button
+            onClick={() => setActiveTab("my_posts")}
+            className={`flex-1 py-2.5 font-bold rounded-xl transition-all text-sm ${activeTab === "my_posts" ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+              }`}
+          >
+            ประกาศของฉัน
+          </button>
         </div>
+
+        {/* ==========================================
+            📦 Tab: Claims (สถานะขอรับของคืน)
+            ========================================== */}
+        {activeTab === "claims" && (
+          <div className='space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500'>
+            {myClaims.length === 0 ? (
+              <div className='text-center py-16 bg-white rounded-[2rem] border border-slate-100 shadow-sm'>
+                <PackageSearch className='mx-auto mb-4 text-slate-300' size={48} />
+                <h3 className='text-lg font-bold text-slate-900'>คุณยังไม่มีรายการขอรับของคืน</h3>
+                <p className='text-slate-500 text-sm mt-1'>หากคุณทำของหาย ลองค้นหาและส่งคำขอดูนะ</p>
+                <Link href="/" className="inline-block mt-6 px-6 py-2.5 bg-indigo-50 text-indigo-600 font-bold rounded-xl hover:bg-indigo-100 transition-colors">
+                  ค้นหาสิ่งของ
+                </Link>
+              </div>
+            ) : (
+              myClaims.map((claim) => {
+                const StatusConfig = getStatusUI(claim.status);
+                const Icon = StatusConfig.icon;
+
+                return (
+                  // ✅ ลิงก์ที่ถูกแก้ไข ไม่พังแน่นอน
+                  <Link href={`/claim/${claim.id}`} key={claim.id} className='block group'>
+                    <div className='bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all flex flex-col sm:flex-row gap-5 items-start sm:items-center'>
+
+                      {/* รูปภาพสิ่งของ */}
+                      <div className='w-full sm:w-28 h-40 sm:h-28 bg-slate-50 rounded-xl overflow-hidden shrink-0 relative'>
+                        {claim.found_item?.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={claim.found_item.image_url} alt="item" className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500' />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <ImageIcon className="text-slate-300" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ข้อมูล */}
+                      <div className='flex-1 w-full'>
+                        <div className='flex justify-between items-start mb-2'>
+                          <h4 className='font-bold text-slate-900 text-lg group-hover:text-indigo-600 transition-colors line-clamp-1 pr-2'>
+                            {claim.found_item?.title || "ไม่ระบุชื่อ"}
+                          </h4>
+                          <span className={`shrink-0 flex items-center text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full border ${StatusConfig.bg} ${StatusConfig.textCol} ${StatusConfig.border}`}>
+                            <Icon size={12} className="mr-1" /> {StatusConfig.text}
+                          </span>
+                        </div>
+                        <p className='text-sm text-slate-500 font-medium flex items-center mb-1.5'>
+                          <MapPin size={14} className='mr-1.5 text-slate-400 shrink-0' />
+                          <span className="truncate">{claim.found_item?.location_text || "ไม่ระบุสถานที่"}</span>
+                        </p>
+                        <p className='text-xs text-slate-400 font-medium'>
+                          อัปเดตเมื่อ: {new Date(claim.created_at).toLocaleDateString('th-TH')}
+                        </p>
+                      </div>
+
+                      {/* ไอคอนลูกศร */}
+                      <div className='hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-slate-50 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors shrink-0'>
+                        <ChevronRight size={20} />
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        )}
+
+        {/* ==========================================
+            📢 Tab: My Posts (ประกาศของฉัน)
+            ========================================== */}
+        {activeTab === "my_posts" && (
+          <div className='space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500'>
+            {myPosts.length === 0 ? (
+              <div className='text-center py-16 bg-white rounded-[2rem] border border-slate-100 shadow-sm'>
+                <SearchX className='mx-auto mb-4 text-slate-300' size={48} />
+                <h3 className='text-lg font-bold text-slate-900'>คุณยังไม่มีประกาศใดๆ</h3>
+                <div className='flex justify-center gap-4 mt-6'>
+                  <Link href="/found" className='px-4 py-2 bg-emerald-50 text-emerald-600 font-bold rounded-xl text-sm'>+ แจ้งพบสิ่งของ</Link>
+                  <Link href="/lost" className='px-4 py-2 bg-rose-50 text-rose-600 font-bold rounded-xl text-sm'>+ แจ้งของหาย</Link>
+                </div>
+              </div>
+            ) : (
+              myPosts.map((post) => (
+                <div key={post.id} className='bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-5 items-start sm:items-center relative'>
+
+                  {/* ป้ายกำกับ หาย/เจอ (สไตล์ริบบิ้น) */}
+                  <div className={`absolute -top-3 -left-2 sm:left-[-10px] px-3 py-1 text-[11px] sm:text-xs font-black text-white rounded-lg shadow-md z-10 transform -rotate-2 ${post.type === 'lost' ? "bg-rose-500" : "bg-emerald-500"
+                    }`}>
+                    {post.type === 'lost' ? "ของฉันหาย" : "ฉันพบของ"}
+                  </div>
+
+                  {/* รูปภาพ */}
+                  <Link href={`/item/${post.id}`} className='w-full sm:w-28 h-40 sm:h-28 bg-slate-50 rounded-xl overflow-hidden shrink-0 mt-2 sm:mt-0 relative group border border-slate-100'>
+                    {post.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={post.image_url} alt="post" className='w-full h-full object-cover group-hover:scale-105 transition-transform' />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="text-slate-300" />
+                      </div>
+                    )}
+                  </Link>
+
+                  {/* ข้อมูล */}
+                  <div className='flex-1 w-full'>
+                    <h4 className='font-bold text-slate-900 text-lg mb-2 line-clamp-1'>
+                      <Link href={`/item/${post.id}`} className="hover:text-indigo-600 transition-colors">{post.title}</Link>
+                    </h4>
+                    <p className='text-sm text-slate-500 font-medium flex items-center mb-1.5'>
+                      <MapPin size={14} className='mr-1.5 text-slate-400 shrink-0' />
+                      <span className="truncate">{post.location}</span>
+                    </p>
+                    <p className='text-xs text-slate-400 font-medium'>
+                      โพสต์เมื่อ: {new Date(post.created_at).toLocaleDateString('th-TH')}
+                    </p>
+                  </div>
+
+                  {/* Actions (แก้ไข / ลบ) */}
+                  <div className="flex flex-row sm:flex-col gap-2 shrink-0 border-t sm:border-t-0 sm:border-l border-slate-100 pt-4 sm:pt-0 sm:pl-4 justify-end w-full sm:w-auto mt-2 sm:mt-0">
+                    <button
+                      onClick={() => router.push(`/item/${post.id}`)}
+                      className="flex-1 sm:flex-none flex items-center justify-center p-2.5 bg-slate-50 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 rounded-xl transition-all border border-slate-100"
+                      title="ดูรายละเอียด / แก้ไข"
+                    >
+                      <Edit3 size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleDeletePost(post.id, post.type, post.title)}
+                      className="flex-1 sm:flex-none flex items-center justify-center p-2.5 bg-slate-50 text-slate-500 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 rounded-xl transition-all border border-slate-100"
+                      title="ลบประกาศ"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </main>
-    </div>
-  );
-}
-
-// ==========================================
-// 🧩 Claim Card Component (การ์ดแสดงสถานะคำขอ)
-// ==========================================
-function ClaimCard({ claim, onCancel }: { claim: ClaimItem, onCancel: (id: string) => void }) {
-  
-  let statusConfig = {
-    bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200',
-    icon: <Clock size={16} className="mr-1.5" />, label: 'รอแอดมินตรวจสอบ'
-  };
-
-  if (claim.status === 'APPROVED' || claim.status === 'approved') {
-    statusConfig = {
-      bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200',
-      icon: <CheckCircle2 size={16} className="mr-1.5" />, label: 'อนุมัติแล้ว (ติดต่อรับของ)'
-    };
-  } else if (claim.status === 'REJECTED' || claim.status === 'rejected') {
-    statusConfig = {
-      bg: 'bg-rose-50', text: 'text-rose-600', border: 'border-rose-200',
-      icon: <XCircle size={16} className="mr-1.5" />, label: 'หลักฐานไม่ผ่าน (ถูกปฏิเสธ)'
-    };
-  }
-
-  return (
-    <div className="bg-white rounded-[1.5rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col relative group">
-      <div className="relative h-36 overflow-hidden bg-slate-100 shrink-0 flex items-center justify-center border-b border-slate-100">
-        {claim.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={claim.image_url} alt={claim.title} className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" />
-        ) : (
-          <div className="flex flex-col items-center opacity-40">
-             <ImageIcon size={24} className="mb-2" />
-          </div>
-        )}
-        
-        {/* Status Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/30 backdrop-blur-[2px]">
-          <div className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center shadow-lg border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}>
-            {statusConfig.icon} {statusConfig.label}
-          </div>
-        </div>
-      </div>
-      
-      <div className="p-4 sm:p-5 flex flex-col flex-1">
-        <h3 className="font-extrabold text-base mb-2 line-clamp-1 text-slate-900 leading-tight">{claim.title}</h3>
-        <div className="flex items-center text-slate-500 text-xs font-medium mb-3">
-          <Clock size={12} className="mr-1.5 text-slate-400 shrink-0" />
-          <span>ส่งคำขอเมื่อ {new Date(claim.created_at).toLocaleDateString('th-TH')}</span>
-        </div>
-
-        <div className="mt-auto pt-3 border-t border-slate-100 flex gap-2">
-         <Link 
-           href={`/item/${claim.item_id}`}
-           className="flex-1 text-center py-2.5 bg-slate-50 text-indigo-600 hover:bg-indigo-100 rounded-xl text-xs font-bold transition-colors active:scale-95"
-         >
-           ดูรายละเอียด
-         </Link>
-         {(claim.status === 'PENDING' || claim.status === 'pending') && (
-           <button 
-             onClick={() => onCancel(claim.id)}
-             className="p-2.5 bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors active:scale-95"
-             title="ยกเลิกคำขอ"
-           >
-              <Trash2 size={16}/>
-           </button>
-         )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ==========================================
-// 🧩 Profile Card Component
-// ==========================================
-function ProfileCard({ item, theme, onDelete, onResolve }: any) {
-  const isResolved = item.status === 'RESOLVED' || item.status === 'RETURNED' || (item.status !== 'SEARCHING' && item.status !== 'searching' && item.status !== 'AVAILABLE' && item.status !== 'available');
-  const badgeBg = theme === 'rose' ? 'bg-rose-500' : 'bg-emerald-500';
-
-  return (
-    <div className={`bg-white rounded-[1.5rem] border ${isResolved ? 'border-slate-100 opacity-75' : 'border-slate-200'} overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col relative`}>
-      <div className="relative h-44 overflow-hidden bg-slate-50 shrink-0 flex items-center justify-center">
-        {item.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="flex flex-col items-center opacity-40"><ImageIcon size={32} className="mb-2" /></div>
-        )}
-        <div className="absolute top-3 left-3">
-          <span className={`px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider text-white shadow-sm ${badgeBg}`}>
-            {item.type === 'LOST' ? 'ของหาย' : 'เก็บของได้'}
-          </span>
-        </div>
-        <div className="absolute top-3 right-3">
-          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold shadow-sm ${isResolved ? 'bg-slate-800 text-white' : 'bg-white text-slate-700'}`}>
-            {item.status}
-          </span>
-        </div>
-      </div>
-      
-      <div className="p-4 sm:p-5 flex flex-col flex-1">
-        <h3 className={`font-extrabold text-base mb-3 line-clamp-1 leading-tight ${isResolved ? 'text-slate-500 line-through' : 'text-slate-900'}`}>{item.title}</h3>
-        <div className="space-y-1.5 mb-4 flex-1">
-          <div className="flex items-center text-slate-500 text-xs font-medium">
-            <MapPin size={14} className="mr-1.5 text-slate-400 shrink-0" /><span className="truncate">{item.location_text}</span>
-          </div>
-          <div className="flex items-center text-slate-500 text-xs font-medium">
-            <Clock size={14} className="mr-1.5 text-slate-400 shrink-0" />
-            <span>{new Date(item.date).toLocaleDateString('th-TH')}</span>
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-slate-100 flex gap-2 shrink-0">
-         {!isResolved && (
-           <button onClick={() => onResolve(item.id, item.type)} className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-colors active:scale-95 ${theme === 'rose' ? 'bg-rose-50 text-rose-600 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}>
-              <Check size={14}/> {item.type === 'LOST' ? 'เจอแล้ว (จบงาน)' : 'คืนแล้ว (จบงาน)'}
-           </button>
-         )}
-         <Link href={`/item/${item.id}`} className="p-2.5 bg-slate-50 text-indigo-600 hover:bg-indigo-100 rounded-xl transition-colors active:scale-95" title="ดูรายละเอียด">
-            <AlertCircle size={16}/>
-         </Link>
-         <button onClick={() => onDelete(item.id, item.type)} className={`p-2.5 bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors active:scale-95 ${isResolved ? 'flex-1 flex justify-center gap-2' : ''}`} title="ลบประกาศ">
-            <Trash2 size={16}/> {isResolved ? <span className="text-xs font-bold">ลบประวัติทิ้ง</span> : ''}
-         </button>
-        </div>
-      </div>
     </div>
   );
 }
