@@ -52,8 +52,8 @@ export default function ClaimDetailPage() {
     const fetchClaimDetail = async () => {
       try {
         if (!params.id || params.id === "undefined") {
-            setLoading(false);
-            return;
+          setLoading(false);
+          return;
         }
 
         const { data: { user } } = await supabase.auth.getUser();
@@ -118,7 +118,7 @@ export default function ClaimDetailPage() {
     };
 
     fetchClaimDetail();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id, router]);
 
   if (loading) {
@@ -147,10 +147,11 @@ export default function ClaimDetailPage() {
   const isRejected = claim.status.toLowerCase() === "rejected";
   const isReadyForPickup = claim.status.toLowerCase() === "ready_for_pickup";
   const isCompleted = claim.status.toLowerCase() === "completed";
+  const isSuccessState = isApproved || isReadyForPickup || isCompleted;
 
   return (
     <div className='min-h-screen bg-[#FAFAFA] text-slate-900 font-sans selection:bg-indigo-100 selection:text-indigo-900 pb-24'>
-      
+
       {/* 🌟 Header */}
       <div className="bg-white border-b border-slate-200 pt-24 pb-6 sticky top-0 z-40 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -159,13 +160,12 @@ export default function ClaimDetailPage() {
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">รายละเอียดคำขอ</h1>
-          <div className={`px-4 py-2 rounded-full font-bold text-sm inline-flex items-center w-fit shadow-sm border ${
-              isPending ? "bg-amber-50 text-amber-600 border-amber-200" :
-              isApproved ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
-              isRejected ? "bg-rose-50 text-rose-600 border-rose-200" :
-              isReadyForPickup ? "bg-indigo-50 text-indigo-600 border-indigo-200" :
-              "bg-teal-50 text-teal-600 border-teal-200"
-            }`}>
+            <div className={`px-4 py-2 rounded-full font-bold text-sm inline-flex items-center w-fit shadow-sm border ${isPending ? "bg-amber-50 text-amber-600 border-amber-200" :
+                isApproved ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
+                  isRejected ? "bg-rose-50 text-rose-600 border-rose-200" :
+                    isReadyForPickup ? "bg-indigo-50 text-indigo-600 border-indigo-200" :
+                      "bg-teal-50 text-teal-600 border-teal-200"
+              }`}>
               {isPending && <><Clock size={16} className="mr-2" /> กำลังรอตรวจสอบ</>}
               {isApproved && <><CheckCircle2 size={16} className="mr-2" /> อนุมัติแล้ว — รอรับของ</>}
               {isRejected && <><XCircle size={16} className="mr-2" /> ถูกปฏิเสธ</>}
@@ -178,44 +178,40 @@ export default function ClaimDetailPage() {
       </div>
 
       <main className='max-w-3xl mx-auto mt-8 px-4 sm:px-6 lg:px-8 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500'>
-        
+
         {/* Status Alert */}
-        <div className={`p-4 sm:p-5 rounded-2xl border mb-8 flex items-start gap-4 shadow-sm ${
-          isPending ? "bg-amber-50/50 border-amber-200" :
-          isApproved ? "bg-emerald-50/50 border-emerald-200" :
-          isRejected ? "bg-rose-50/50 border-rose-200" :
-          "bg-indigo-50/50 border-indigo-200"
-        }`}>
-          <div className={`mt-0.5 p-2 rounded-full shrink-0 ${
-            isPending ? "bg-amber-100 text-amber-600" :
-            isApproved ? "bg-emerald-100 text-emerald-600" :
-            isRejected ? "bg-rose-100 text-rose-600" :
-            "bg-indigo-100 text-indigo-600"
+        <div className={`p-4 sm:p-5 rounded-2xl border mb-8 flex items-start gap-4 shadow-sm ${isPending ? "bg-amber-50/50 border-amber-200" :
+            isSuccessState ? "bg-emerald-50/50 border-emerald-200" :
+              isRejected ? "bg-rose-50/50 border-rose-200" :
+                "bg-indigo-50/50 border-indigo-200"
           }`}>
+          <div className={`mt-0.5 p-2 rounded-full shrink-0 ${isPending ? "bg-amber-100 text-amber-600" :
+              isSuccessState ? "bg-emerald-100 text-emerald-600" :
+                isRejected ? "bg-rose-100 text-rose-600" :
+                  "bg-indigo-100 text-indigo-600"
+            }`}>
             {isPending && <Info size={20} />}
-            {isApproved && <Check size={20} />}
+            {isSuccessState && <Check size={20} />}
             {isRejected && <XCircle size={20} />}
           </div>
           <div>
-            <h3 className={`font-bold text-base mb-1 ${
-              isPending ? "text-amber-800" :
-              isApproved ? "text-emerald-800" :
-              isRejected ? "text-rose-800" :
-              "text-indigo-800"
-            }`}>
-              {isPending && "แอดมินกำลังตรวจสอบข้อมูลของคุณ"}
-              {isApproved && "ยินดีด้วย! หลักฐานของคุณผ่านการอนุมัติแล้ว"}
+            <h3 className={`font-bold text-base mb-1 ${isPending ? "text-amber-800" :
+                isSuccessState ? "text-emerald-800" :
+                  isRejected ? "text-rose-800" :
+                    "text-indigo-800"
+              }`}>
+              {isPending && "เจ้าหน้าที่กำลังตรวจสอบข้อมูลของคุณ"}
+              {isSuccessState && "ยินดีด้วย! หลักฐานของคุณผ่านการอนุมัติแล้ว"}
               {isRejected && "ขออภัย หลักฐานที่ส่งมาไม่ผ่านการอนุมัติ"}
             </h3>
-            <p className={`text-sm leading-relaxed ${
-              isPending ? "text-amber-700/80" :
-              isApproved ? "text-emerald-700/80" :
-              isRejected ? "text-rose-700/80" :
-              "text-indigo-700/80"
-            }`}>
+            <p className={`text-sm leading-relaxed ${isPending ? "text-amber-700/80" :
+                isSuccessState ? "text-emerald-700/80" :
+                  isRejected ? "text-rose-700/80" :
+                    "text-indigo-700/80"
+              }`}>
               {isPending && "เราจะทำการตรวจสอบหลักฐานรูปภาพและคำอธิบายที่คุณส่งมาเทียบกับของจริง โปรดรอการแจ้งเตือนอัปเดตสถานะในเร็วๆ นี้"}
-              {isApproved && "ผู้ดูแลระบบได้ยืนยันการเป็นเจ้าของแล้ว นำ PIN Code ด้านล่างนี้ไปแสดงต่อเจ้าหน้าที่ เพื่อยืนยันตัวตน"}
-              {isRejected && "แอดมินได้ตรวจสอบหลักฐานแล้วพบว่าอาจไม่ตรงกับสิ่งของจริง หรือรายละเอียดไม่เพียงพอ คุณสามารถยื่นคำขอใหม่ได้หากมีข้อมูลเพิ่มเติม"}
+              {isSuccessState && "เจ้าหน้าที่ได้ยืนยันการเป็นเจ้าของแล้ว นำ PIN Code ด้านล่างนี้ไปแสดงต่อเจ้าหน้าที่ เพื่อยืนยันตัวตน"}
+              {isRejected && "เจ้าหน้าที่ได้ตรวจสอบหลักฐานแล้วพบว่าอาจไม่ตรงกับสิ่งของจริง หรือรายละเอียดไม่เพียงพอ คุณสามารถยื่นคำขอใหม่ได้หากมีข้อมูลเพิ่มเติม"}
             </p>
             {claim.admin_note && (
               <div className="mt-4 p-3 bg-white/60 rounded-xl border border-rose-200">
@@ -246,7 +242,7 @@ export default function ClaimDetailPage() {
                 <Calendar size={16} className="mr-2 text-slate-400" /> พบเมื่อ: {claim.found_item.date_found}
               </p>
               <p className="text-sm text-slate-600 flex items-start font-medium">
-                <MapPin size={16} className="mr-2 mt-0.5 text-slate-400 shrink-0" /> 
+                <MapPin size={16} className="mr-2 mt-0.5 text-slate-400 shrink-0" />
                 สถานที่พบ: {claim.found_item.location_text}
               </p>
             </div>
@@ -258,9 +254,9 @@ export default function ClaimDetailPage() {
           <h3 className="text-lg font-extrabold text-slate-900 mb-6 flex items-center">
             <Activity size={20} className="mr-2 text-indigo-600" /> สถานะการดำเนินการ
           </h3>
-          
+
           <div className="relative border-l-2 border-slate-100 ml-3 sm:ml-4 space-y-8 pb-4">
-            
+
             {/* Step 1: ยื่นคำขอ */}
             <div className="relative pl-6 sm:pl-8">
               <div className="absolute -left-[11px] top-0.5 w-5 h-5 rounded-full bg-emerald-500 border-4 border-white shadow-sm flex items-center justify-center">
@@ -272,32 +268,30 @@ export default function ClaimDetailPage() {
 
             {/* Step 2: แอดมินตรวจสอบ */}
             <div className="relative pl-6 sm:pl-8">
-              <div className={`absolute -left-[11px] top-0.5 w-5 h-5 rounded-full border-4 border-white shadow-sm flex items-center justify-center ${
-                isPending ? "bg-amber-400 animate-pulse" : (isApproved ? "bg-emerald-500" : "bg-rose-500")
-              }`}>
+              <div className={`absolute -left-[11px] top-0.5 w-5 h-5 rounded-full border-4 border-white shadow-sm flex items-center justify-center ${isPending ? "bg-amber-400 animate-pulse" : (isSuccessState ? "bg-emerald-500" : "bg-rose-500")
+                }`}>
                 {!isPending && <Check size={10} className="text-white" strokeWidth={4} />}
               </div>
               <h4 className={`font-bold text-sm sm:text-base ${isPending ? "text-amber-600" : "text-slate-900"}`}>
                 {isPending ? "เจ้าหน้าที่กำลังตรวจสอบหลักฐาน" : "เจ้าหน้าที่ตรวจสอบเรียบร้อยแล้ว"}
               </h4>
               <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium leading-relaxed">
-                {isPending 
-                  ? "ระบบกำลังรอแอดมินตรวจสอบความถูกต้องของข้อมูล (ใช้เวลา 1-2 วันทำการ)" 
-                  : (isApproved ? "หลักฐานของคุณถูกต้องและได้รับการอนุมัติ" : "หลักฐานไม่ผ่านการอนุมัติ")}
+                {isPending
+                  ? "ระบบกำลังรอการตรวจสอบความถูกต้องของข้อมูล (ใช้เวลา 1-2 วันทำการ)"
+                  : (isSuccessState ? "หลักฐานของคุณถูกต้องและได้รับการอนุมัติ" : "หลักฐานไม่ผ่านการอนุมัติ")}
               </p>
             </div>
 
             {/* Step 3: รับของคืน (โชว์เฉพาะถ้าอนุมัติหรือกำลังรอ) */}
             {!isRejected && (
               <div className="relative pl-6 sm:pl-8 opacity-100">
-                <div className={`absolute -left-[11px] top-0.5 w-5 h-5 rounded-full border-4 border-white shadow-sm flex items-center justify-center ${
-                  isApproved ? "bg-indigo-500 animate-bounce" : "bg-slate-200"
-                }`}></div>
-                <h4 className={`font-bold text-sm sm:text-base ${isApproved ? "text-indigo-600" : "text-slate-400"}`}>
+                <div className={`absolute -left-[11px] top-0.5 w-5 h-5 rounded-full border-4 border-white shadow-sm flex items-center justify-center ${isSuccessState ? "bg-indigo-500 animate-bounce" : "bg-slate-200"
+                  }`}></div>
+                <h4 className={`font-bold text-sm sm:text-base ${isSuccessState ? "text-indigo-600" : "text-slate-400"}`}>
                   รับสิ่งของคืน
                 </h4>
-                <p className={`text-xs sm:text-sm mt-1 font-medium ${isApproved ? "text-slate-600" : "text-slate-400"}`}>
-                  {isApproved ? "คุณสามารถเดินทางมารับสิ่งของคืนได้เลย" : "รอการอนุมัติเพื่อดูสถานที่รับของ"}
+                <p className={`text-xs sm:text-sm mt-1 font-medium ${isSuccessState ? "text-slate-600" : "text-slate-400"}`}>
+                  {isSuccessState ? (isCompleted ? "ส่งมอบสิ่งของเสร็จสมบูรณ์" : "คุณสามารถเดินทางมารับสิ่งของคืนได้เลย") : "รอการอนุมัติเพื่อดูสถานที่รับของ"}
                 </p>
               </div>
             )}
@@ -305,7 +299,7 @@ export default function ClaimDetailPage() {
         </div>
 
         {/* 🚨 3. Next Steps (Action Box - PIN CODE CARD when approved) */}
-        {isApproved && claim.pin_code && (
+        {isSuccessState && claim.pin_code && !isCompleted && (
           <div className="bg-indigo-600 rounded-[2rem] p-6 sm:p-8 text-center relative overflow-hidden shadow-xl">
             <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
@@ -323,7 +317,7 @@ export default function ClaimDetailPage() {
         )}
 
         {/* กรณี approved แต่ยังไม่มี PIN - แสดง location */}
-        {isApproved && !claim.pin_code && (
+        {isSuccessState && !claim.pin_code && !isCompleted && (
           <div className={`rounded-[2rem] border shadow-sm p-6 sm:p-8 bg-emerald-50/50 border-emerald-200`}>
             <div className="flex flex-col gap-4">
               <div className="flex gap-4">
@@ -348,6 +342,19 @@ export default function ClaimDetailPage() {
           </div>
         )}
 
+        {/* กรณี Completed - ส่งมอบเสร็จสมบูรณ์ */}
+        {isCompleted && (
+          <div className="bg-emerald-600 rounded-[2rem] p-6 sm:p-8 text-center relative overflow-hidden shadow-xl">
+            <div className="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+            <div className="relative z-10 flex flex-col items-center">
+              <CheckCircle2 size={48} className="text-emerald-200 mb-4" />
+              <h3 className="font-black text-white text-2xl mb-2">ส่งมอบสิ่งของสำเร็จ!</h3>
+              <p className="text-emerald-100 text-sm mb-6">คุณได้รับสิ่งของนี้คืนเรียบร้อยแล้ว ขอบคุณที่ใช้บริการ FoundIt.</p>
+            </div>
+          </div>
+        )}
+
         {isPending && (
           <div className={`rounded-[2rem] border shadow-sm p-6 sm:p-8 bg-amber-50/50 border-amber-200`}>
             <div className="flex gap-4">
@@ -355,7 +362,7 @@ export default function ClaimDetailPage() {
               <div>
                 <h3 className="font-extrabold text-amber-900 mb-2 text-lg">สิ่งที่ต้องทำต่อไป</h3>
                 <p className="text-sm text-amber-700/80 font-medium leading-relaxed">
-                  โปรดรอให้ผู้ดูแลระบบ (Admin) ตรวจสอบความถูกต้องของข้อมูลที่คุณส่งมา หากได้รับการอนุมัติ ระบบจะอัปเดตสถานะและแสดง <b>PIN Code</b> สำหรับรับของให้คุณทราบ
+                  โปรดรอให้เจ้าหน้าที่ตรวจสอบความถูกต้องของข้อมูลที่คุณส่งมา หากได้รับการอนุมัติ ระบบจะอัปเดตสถานะและแสดง <b>PIN Code</b> สำหรับรับของให้คุณทราบ
                 </p>
               </div>
             </div>
@@ -371,7 +378,10 @@ export default function ClaimDetailPage() {
                 <p className="text-sm text-rose-700/80 font-medium leading-relaxed mb-4">
                   ระบบไม่สามารถอนุมัติการส่งคืนได้ เนื่องจากหลักฐานไม่เพียงพอ หรือข้อมูลไม่ตรงกับลักษณะของสิ่งของชิ้นนี้
                 </p>
-                <button className="px-5 py-2.5 bg-white border border-rose-200 text-rose-600 font-bold text-sm rounded-xl hover:bg-rose-50 transition-colors shadow-sm">
+                <button 
+                  onClick={() => window.location.href = `mailto:support@foundit.com?subject=สอบถามสถานะคำขอถูกปฏิเสธ (Claim ID: CLM-${claim.id.split('-')[0].toUpperCase()})&body=สวัสดีครับ/ค่ะ,%0D%0A%0D%0Aต้องการสอบถามรายละเอียดเพิ่มเติมเกี่ยวกับการปฏิเสธคำขอรับคืนสิ่งของ ID: CLM-${claim.id.split('-')[0].toUpperCase()}%0D%0A%0D%0Aรบกวนตรวจสอบอีกครั้งครับ/ค่ะ`}
+                  className="px-5 py-2.5 bg-white border border-rose-200 text-rose-600 font-bold text-sm rounded-xl hover:bg-rose-50 transition-colors shadow-sm"
+                >
                   ติดต่อเจ้าหน้าที่เพื่อชี้แจงเพิ่มเติม
                 </button>
               </div>
@@ -382,7 +392,7 @@ export default function ClaimDetailPage() {
         {/* 📝 4. My Proof Section (หลักฐานที่ฉันส่งไป) */}
         <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6 sm:p-8">
           <h3 className="text-lg font-extrabold text-slate-900 mb-6">หลักฐานที่คุณแนบไว้</h3>
-          
+
           <div className="space-y-6">
             <div>
               <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">คำอธิบายเพิ่มเติม</p>
