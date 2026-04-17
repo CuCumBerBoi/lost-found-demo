@@ -87,6 +87,40 @@ export async function PATCH(request: Request) {
       }
     }
 
+    // แจ้งเตือนผู้ใช้ (ถ้ามีการส่ง claimer_id และ item_title มา)
+    if (body.claimer_id && body.item_title) {
+      let type: 'success' | 'alert' | 'system' = 'system';
+      let title = '';
+      let message = '';
+
+      if (status === 'APPROVED') {
+        type = 'success';
+        title = 'คำขอได้รับการอนุมัติ 🎉';
+        message = `คำขอรับ "${body.item_title}" ได้รับการอนุมัติ รหัส PIN ของคุณคือ ${pin_code || '---'}`;
+      } else if (status === 'REJECTED') {
+        type = 'alert';
+        title = 'คำขอถูกปฏิเสธ ❌';
+        message = `คำขอรับ "${body.item_title}" ไม่ผ่านการพิจารณา`;
+      } else if (status === 'COMPLETED') {
+        type = 'success';
+        title = 'ส่งมอบสิ่งของสำเร็จ 📦';
+        message = `คุณได้รับ "${body.item_title}" คืนเรียบร้อยแล้ว ขอบคุณที่ใช้บริการ!`;
+      }
+
+      if (title) {
+        if (admin_note) message += ` (หมายเหตุ: ${admin_note})`;
+
+        await supabase.from('notifications').insert({
+          user_id: body.claimer_id,
+          title,
+          message,
+          type,
+          link: `/claim/${claim_id}`,
+          is_read: false
+        });
+      }
+    }
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('[API /admin/claims] PATCH error:', err);

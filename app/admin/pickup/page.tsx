@@ -29,6 +29,7 @@ interface ClaimPickupData {
   status: string;
   pin_code: string; // ✅ ชื่อคอลัมน์จริงใน DB
   found_id: string; // ✅ สำหรับ update found_items
+  claimer_id: string; // ✅ สำหรับส่ง notification
   claimer: {
     full_name: string;
     email: string;
@@ -110,6 +111,7 @@ export default function AdminPickupPage() {
           status: d.status,
           pin_code: d.pin_code,
           found_id: d.found_id,
+          claimer_id: d.claimer_id,
           claimer: {
             full_name: userObj.full_name || "ไม่ระบุชื่อ",
             email: userObj.email || "-",
@@ -173,6 +175,8 @@ export default function AdminPickupPage() {
         status: 'COMPLETED',
         admin_note: proofUrl ? `ส่งมอบสำเร็จ หลักฐาน: ${proofUrl}` : 'ส่งมอบสำเร็จ',
         found_id: matchedClaim.found_id,
+        claimer_id: matchedClaim.claimer_id,
+        item_title: matchedClaim.found_item.title,
       };
       const res = await fetch('/api/admin/claims', {
         method: 'PATCH',

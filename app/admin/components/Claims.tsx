@@ -264,6 +264,8 @@ export default function ClaimsView({ showToast }: { showToast: (msg: string) => 
           admin_note: adminNotes,
           pin_code: pinCode,
           found_id: selectedClaim.found_id,
+          claimer_id: selectedClaim.claimer_id,
+          item_title: selectedClaim.found_item.title,
         }),
       });
 

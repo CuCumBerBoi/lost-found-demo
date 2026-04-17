@@ -49,7 +49,7 @@ export async function analyzeImage(base64Image: string, existingCategories: stri
 
     // 3. ตั้งค่า Model
     const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.5-flash",
+        model: "gemini-2.0-flash",
         systemInstruction: "คุณคือผู้เชี่ยวชาญด้านการวิเคราะห์รูปภาพสิ่งของสูญหาย คุณต้องตอบกลับเป็นภาษาไทยที่กระชับ แม่นยำ และเป็นกลางเสมอ หลีกเลี่ยงการเดาสุ่มหากมองไม่เห็นชัดเจน",
         generationConfig: { 
           responseMimeType: "application/json",
