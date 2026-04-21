@@ -3,8 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Plus, X, Home, PackageSearch, Megaphone, CheckSquare } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export default function MobileFloatingMenu() {
+  const pathname = usePathname();
+  if (pathname === "/login" || pathname === "/register" || pathname === "/admin") return null;
+
   const [isOpen, setIsOpen] = useState(false);
 
   // รายการเมนูของคุณ (ปรับเปลี่ยน href และชื่อได้ตามต้องการ)
