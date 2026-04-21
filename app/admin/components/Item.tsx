@@ -158,7 +158,7 @@ export default function ItemsView({ showToast }: { showToast: (msg: string) => v
         <div>
           <h1 className='text-3xl font-extrabold flex items-center text-slate-900 tracking-tight'>
             <PackageSearch className='text-indigo-600 mr-3' size={32} />
-            จัดการประกาศ 
+            จัดการประกาศ
           </h1>
           <p className='text-slate-500 mt-2 font-medium'>ดูรายการทั้งหมดและจัดการประกาศ</p>
         </div>
@@ -170,8 +170,8 @@ export default function ItemsView({ showToast }: { showToast: (msg: string) => v
             <button
               onClick={() => setTab("found")}
               className={`flex-1 sm:flex-none px-6 py-2.5 font-bold rounded-xl transition-all text-sm ${tab === "found"
-                  ? "bg-white text-emerald-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800"
+                ? "bg-white text-emerald-600 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
                 }`}
             >
               ประกาศแจ้งพบ ({items.found.length})
@@ -179,8 +179,8 @@ export default function ItemsView({ showToast }: { showToast: (msg: string) => v
             <button
               onClick={() => setTab("lost")}
               className={`flex-1 sm:flex-none px-6 py-2.5 font-bold rounded-xl transition-all text-sm ${tab === "lost"
-                  ? "bg-white text-rose-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800"
+                ? "bg-white text-rose-600 shadow-sm"
+                : "text-slate-500 hover:text-slate-800"
                 }`}
             >
               ประกาศแจ้งหาย ({items.lost.length})
@@ -206,41 +206,41 @@ export default function ItemsView({ showToast }: { showToast: (msg: string) => v
               const isReturned = ["RETURNED", "CLAIMED"].includes(item.status);
 
               return (
-              <div
-                key={item.id}
-                className='p-4 sm:p-5 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between hover:border-slate-300 hover:shadow-sm transition-all bg-white gap-4'
-              >
-                <div className='flex-1'>
-                  <h4 className='font-bold text-slate-900 mb-2.5 text-base sm:text-lg'>
-                    {item.title}
-                  </h4>
-                  <div className='flex flex-wrap gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-600 font-medium'>
-                    <p className="flex items-center gap-1.5"><User size={14} className="text-slate-400" /> {item.reporter}</p>
-                    <p className="flex items-center gap-1.5"><MapPin size={14} className="text-slate-400" /> {item.location}</p>
-                    <p className="flex items-center gap-1.5"><CalendarDays size={14} className="text-slate-400" /> {item.date}</p>
+                <div
+                  key={item.id}
+                  className='p-4 sm:p-5 border border-slate-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between hover:border-slate-300 hover:shadow-sm transition-all bg-white gap-4'
+                >
+                  <div className='flex-1'>
+                    <h4 className='font-bold text-slate-900 mb-2.5 text-base sm:text-lg'>
+                      {item.title}
+                    </h4>
+                    <div className='flex flex-wrap gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-600 font-medium'>
+                      <p className="flex items-center gap-1.5"><User size={14} className="text-slate-400" /> {item.reporter}</p>
+                      <p className="flex items-center gap-1.5"><MapPin size={14} className="text-slate-400" /> {item.location}</p>
+                      <p className="flex items-center gap-1.5"><CalendarDays size={14} className="text-slate-400" /> {item.date}</p>
+                    </div>
+                  </div>
+                  <div className='flex items-center justify-between sm:justify-end gap-4 sm:gap-3 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-slate-100'>
+                    <span
+                      className={`text-xs font-bold px-3.5 py-1.5 rounded-full border ${isActive
+                          ? "bg-indigo-50 text-indigo-600 border-indigo-100"
+                          : isReturned
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                            : "bg-slate-50 text-slate-500 border-slate-200"
+                        }`}
+                    >
+                      {isActive ? "ยังประกาศอยู่" : isReturned ? "ส่งคืนสำเร็จ 🎉" : "ปิดประกาศแล้ว"}
+                    </span>
+                    <button aria-label="ลบประกาศ" title="ลบประกาศ"
+                      onClick={() => setItemToDelete(item)}
+                      className='p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 border border-rose-100 transition-colors active:scale-95'
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
-                <div className='flex items-center justify-between sm:justify-end gap-4 sm:gap-3 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-0 border-slate-100'>
-                  <span
-                    className={`text-xs font-bold px-3.5 py-1.5 rounded-full border ${
-                      isActive
-                        ? "bg-indigo-50 text-indigo-600 border-indigo-100"
-                        : isReturned 
-                          ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                          : "bg-slate-50 text-slate-500 border-slate-200"
-                      }`}
-                  >
-                    {isActive ? "ยังประกาศอยู่" : isReturned ? "ส่งคืนสำเร็จ 🎉" : "ปิดประกาศแล้ว"}
-                  </span>
-                  <button aria-label="ลบประกาศ" title="ลบประกาศ"
-                    onClick={() => setItemToDelete(item)}
-                    className='p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 border border-rose-100 transition-colors active:scale-95'
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            )})
+              )
+            })
           ) : (
             <div className='text-center py-16 bg-slate-50/50 rounded-2xl border border-slate-100 border-dashed'>
               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100">

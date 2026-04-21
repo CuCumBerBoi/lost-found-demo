@@ -45,10 +45,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-// แนะนำให้ทำการ Export Navbar และ BottomNav ออกมาจากไฟล์ components/Navbar.tsx ที่เราสร้างกันไปก่อนหน้านี้
 import { Navbar } from "@/components/Navbar";
 import { Toaster } from "@/components/ui/sonner";
-import { BottomNav } from "@/components/BottomNav";
+// 1. นำเข้า MobileFloatingMenu (อย่าลืมสร้างไฟล์นี้ไว้ในโฟลเดอร์ components นะครับ)
+import MobileFloatingMenu from "@/components/MobileFloatingMenu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -61,8 +61,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CU Lost & Found",
-  description: "ศูนย์กลางแจ้งของหายและของที่พบ",
+  // แนะนำ: คุณอาจจะอยากเปลี่ยน Title ตรงนี้เป็น "Foundit." ให้ตรงกับแบรนด์
+  title: "Foundit. | ศูนย์กลางแจ้งของหาย", 
+  description: "ระบบที่จะช่วยคุณตามหาสิ่งของที่หาย และประกาศตามหาเจ้าของ",
 };
 
 export default function RootLayout({
@@ -76,11 +77,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#FAFAFA]`}
       >
         <Navbar />
-        {/* เพิ่ม pb-20 (padding-bottom) ในหน้าจอเล็ก และเอาออก (lg:pb-0) ในหน้าจอใหญ่ เพื่อไม่ให้ Mobile Bottom Nav บังเนื้อหาข้างล่าง */}
-        <div className='min-h-screen pb-24 lg:pb-0'>{children}</div>
+        
+        {/* 2. ปรับลด pb-24 เหลือแค่ pb-16 ก็พอครับ เพราะปุ่มลอย (Floating Button) 
+            ไม่ได้กินพื้นที่ด้านล่างเป็นแนวยาวเหมือน BottomNav */}
+        <div className='min-h-screen pb-16 lg:pb-0'>{children}</div>
 
-        {/* เมนูด้านล่างสำหรับมือถือ */}
-        {/* <BottomNav /> */}
+        {/* 3. วางปุ่ม Mobile Floating Menu ไว้ตรงนี้ (มันจะแสดงแค่บนมือถือเพราะเราตั้งคลาส lg:hidden ไว้ในตัวมันแล้ว) */}
+        <MobileFloatingMenu />
+        
         <Toaster />
       </body>
     </html>

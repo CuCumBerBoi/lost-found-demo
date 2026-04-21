@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase-client";
 import { UserNav } from "./UserNav";
-import { MobileNav } from "./MobileNav";
 import { 
   PackageSearch, 
   Bell, 
@@ -193,9 +192,7 @@ export function Navbar() {
         
         {/* 🌟 ฝั่งซ้าย: Logo & Branding */}
         <div className="flex items-center gap-2">
-          <div className="md:hidden mr-1">
-            <MobileNav user={user} />
-          </div>
+
           
           <Link href="/" className="flex items-center cursor-pointer group gap-2.5">
             <div className="bg-slate-900 text-white p-2 rounded-xl group-hover:bg-indigo-600 transition-colors duration-300">

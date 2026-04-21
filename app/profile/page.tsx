@@ -210,14 +210,14 @@ export default function ProfilePage() {
             </h1>
             <p className='text-slate-500 font-medium mt-1'>{userProfile?.email}</p>
 
-            <div className='flex flex-wrap justify-center sm:justify-start gap-6 mt-4'>
+            {/* <div className='flex flex-wrap justify-center sm:justify-start gap-6 mt-4'>
               <div className='px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 text-sm font-bold text-slate-700 shadow-sm'>
                 คำขอรับของคืน<span className="text-indigo-600 ml-1">{myClaims.length}</span> รายการ
               </div>
               <div className='px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 text-sm font-bold text-slate-700 shadow-sm'>
                 ประกาศของฉัน<span className="text-indigo-600 ml-1">{myPosts.length}</span> รายการ
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -232,6 +232,7 @@ export default function ProfilePage() {
               }`}
           >
             สถานะขอรับของคืน
+            <span className="text-indigo-600 ml-1">{myClaims.length}</span>
           </button>
           <button
             onClick={() => setActiveTab("my_posts")}
@@ -239,7 +240,8 @@ export default function ProfilePage() {
               }`}
           >
             ประกาศของฉัน
-          </button>
+            <span className="text-indigo-600 ml-1">{myPosts.length}</span>
+              </button>
         </div>
 
         {/* ==========================================

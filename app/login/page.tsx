@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -96,17 +97,26 @@ export default function LoginPage() {
     <div className='min-h-screen bg-[#FAFAFA] text-slate-900 flex font-sans selection:bg-indigo-100 selection:text-indigo-900'>
       
       {/* 🌟 Left Section: Branding & Graphic */}
-      <div className='hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden items-center justify-center p-12'>
+      <div className='hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden items-center justify-center p-12 '>
+        
+        <Image
+            src="/returning.jpg"
+            alt="Login Background"
+            fill
+            className="object-cover opacity-100"
+          />
+
+        {/* Background Image (Added ) */}
+
+
         <div className='absolute top-0 left-0 w-full h-full pointer-events-none'>
+          <div className="absolute inset-0 bg-slate-900/50"></div>
+          
           <div className='absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/30 blur-[120px] rounded-full mix-blend-screen'></div>
           <div className='absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-violet-600/20 blur-[120px] rounded-full mix-blend-screen'></div>
         </div>
 
-        <div className='relative z-10 w-full max-w-lg'>
-          <div className='inline-flex items-center space-x-2 bg-white/10 border border-white/20 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium text-white mb-8'>
-            <Sparkles size={16} className='text-amber-400' />
-            <span>Welcome to FoundIt.</span>
-          </div>
+        <div className='relative z-10 w-full max-w-lg animate-in fade-in slide-in-from-bottom-8 duration-700'>
           <h1 className='text-5xl font-extrabold text-white tracking-tight leading-tight mb-6'>
             ตามหาของที่หาย <br />
             <span className='text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400'>
@@ -117,27 +127,8 @@ export default function LoginPage() {
             ระบบที่จะช่วยคุณตามหาสิ่งของที่หาย และประกาศตามหาเจ้าของ ด้วยการวิเคราะห์ข้อมูลและจับคู่สิ่งของให้คุณโดยอัตโนมัติ รวดเร็ว และปลอดภัย
           </p>
 
-          <div className='space-y-5'>
-            <div className='flex items-center text-slate-300 bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm'>
-              <div className='bg-emerald-500/20 p-2.5 rounded-xl mr-4'>
-                <CheckCircle2 className='text-emerald-400' size={24} />
-              </div>
-              <div>
-                <h4 className='text-white font-bold mb-0.5'>Smart Matching</h4>
-                <p className='text-sm'>ระบบช่วยจับคู่สิ่งของที่หายกับสิ่งของที่พบโดยอัตโนมัติ</p>
-              </div>
-            </div>
-            <div className='flex items-center text-slate-300 bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-sm'>
-              <div className='bg-indigo-500/20 p-2.5 rounded-xl mr-4'>
-                <ShieldCheck className='text-indigo-400' size={24} />
-              </div>
-              <div>
-                <h4 className='text-white font-bold mb-0.5'>Secure Claiming</h4>
-                <p className='text-sm'>ระบบยืนยันตัวตนด้วยหลักฐานและส่งคืนอย่างปลอดภัย</p>
-              </div>
-            </div>
-          </div>
         </div>
+        
       </div>
 
       {/* 🔐 Right Section: Login Form */}
@@ -146,7 +137,7 @@ export default function LoginPage() {
 
         <div className='w-full max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700'>
           
-          <div className='flex items-center justify-center lg:hidden mb-10'>
+          <div className='flex items-center justify-center lg:justify-start mb-10'>
             <div className='bg-indigo-600 text-white p-2.5 rounded-xl mr-3 shadow-lg shadow-indigo-200'>
               <PackageSearch size={28} strokeWidth={2.5} />
             </div>
@@ -157,10 +148,10 @@ export default function LoginPage() {
 
           <div className='mb-10 text-center lg:text-left'>
             <h2 className='text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-3'>
-              ยินดีต้อนรับ 👋
+              ยินดีต้อนรับ
             </h2>
             <p className='text-slate-500 text-base sm:text-lg font-medium'>
-              เข้าสู่ระบบเพื่อสร้างประกาศและติดตามสิ่งของของคุณ
+              เข้าสู่ระบบเพื่อสร้างแจ้งข้อมูลสิ่งของที่คุณพบและ <br/>ติดตามสิ่งของของคุณ
             </p>
           </div>
 
